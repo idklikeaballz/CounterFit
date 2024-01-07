@@ -13,7 +13,7 @@ public class Home extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
-        Button signUpButton = findViewById(R.id.buttonSignUp); // Replace with your actual button ID if different
+        Button signUpButton = findViewById(R.id.buttonSignUp);
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

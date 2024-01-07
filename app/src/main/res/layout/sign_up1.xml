@@ -50,7 +50,7 @@
         android:textSize="20sp" />
 
     <EditText
-        android:id="@+id/ageEditText"
+        android:id="@+id/AgeEdit"
         android:layout_width="match_parent"
         android:layout_height="42dp"
         android:layout_below="@+id/genderGroup"
@@ -68,7 +68,7 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ageEditText"
+        android:layout_below="@+id/AgeEdit"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/inter_semibold"
         android:text="Weight:"
@@ -76,10 +76,10 @@
         android:textSize="20sp" />
 
     <EditText
-        android:id="@+id/weightEditText"
+        android:id="@+id/WeightEdit"
         android:layout_width="385dp"
         android:layout_height="42dp"
-        android:layout_below="@id/ageEditText"
+        android:layout_below="@id/AgeEdit"
         android:layout_marginTop="57dp"
         android:background="@drawable/cool_textborder"
         android:fontFamily="@font/inter_semibold"
@@ -94,7 +94,7 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/weightEditText"
+        android:layout_below="@+id/WeightEdit"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/inter_semibold"
         android:text="Height:"
@@ -102,10 +102,10 @@
         android:textSize="20sp"/>
 
     <EditText
-        android:id="@+id/heightEditText"
+        android:id="@+id/HeightEdit"
         android:layout_width="match_parent"
         android:layout_height="42dp"
-        android:layout_below="@id/weightEditText"
+        android:layout_below="@id/WeightEdit"
         android:layout_marginTop="57dp"
         android:background="@drawable/cool_textborder"
         android:fontFamily="@font/inter_semibold"
@@ -120,7 +120,7 @@
         android:id="@+id/nextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/heightEditText"
+        android:layout_below="@id/HeightEdit"
         android:layout_marginTop="181dp"
         android:background="@drawable/next_button"
         android:fontFamily="@font/inter_semibold"
