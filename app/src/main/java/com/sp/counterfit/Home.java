@@ -19,7 +19,7 @@ public class Home extends AppCompatActivity {
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent= new Intent(Home.this,SignUp3.class);
+                Intent intent= new Intent(Home.this,Login.class);
                 startActivity(intent);
             }
         });
