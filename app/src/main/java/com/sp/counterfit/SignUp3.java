@@ -18,11 +18,14 @@ import java.security.NoSuchAlgorithmException;
 public class SignUp3 extends AppCompatActivity {
 
     private TextInputEditText emailEditText, passwordEditText, confirmPasswordEditText;
+    private SignUpHelper dbHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up3);
+        dbHelper = new SignUpHelper(this);
 
         // Setting up the custom action bar
         ActionBar actionBar = getSupportActionBar();
@@ -59,6 +62,7 @@ public class SignUp3 extends AppCompatActivity {
 
         // Hash the password
         String hashedPassword = hashPassword(password);
+        dbHelper.insertUserData(email, hashedPassword);
 
         // Save the email and hashed password using SharedPreferences
         saveTempUserData(email, hashedPassword);

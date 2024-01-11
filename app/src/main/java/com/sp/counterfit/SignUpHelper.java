@@ -56,18 +56,18 @@ public class SignUpHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void insertUserData(String gender, int age, double weight, double height, String email, String password) {
+    public void insertPersonalDetails(String gender, int age, double weight, double height) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_GENDER, gender);
         values.put(COLUMN_AGE, age);
         values.put(COLUMN_WEIGHT, weight);
         values.put(COLUMN_HEIGHT, height);
-        values.put(COLUMN_EMAIL, email); // Inserting email
-        values.put(COLUMN_PASSWORD, password); // Inserting password
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
+
+
     public void insertOrUpdateGoal(int userId, String weightGoal) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -96,6 +96,23 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         return null;
     }
+    public boolean emailExists(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_EMAIL}, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+    public void insertUserData(String email, String hashedPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_EMAIL, email);
+        values.put(COLUMN_PASSWORD, hashedPassword);
+        db.insert(TABLE_NAME, null, values);
+        db.close();
+    }
+
+
 
 
 

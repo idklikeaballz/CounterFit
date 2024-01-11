@@ -16,12 +16,14 @@ import android.widget.Toast;
 public class SignUp1 extends AppCompatActivity {
 
     private RadioGroup genderGroup;
+    private SignUpHelper dbHelper;
     private EditText ageEdit, weightEdit, heightEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up1);
+        dbHelper = new SignUpHelper(this);
 
         // Initialize your UI components
         genderGroup = findViewById(R.id.genderGroup);
@@ -47,27 +49,17 @@ public class SignUp1 extends AppCompatActivity {
         String weight = weightEdit.getText().toString();
         String height = heightEdit.getText().toString();
 
-        // Check if any field is empty or if no RadioButton is selected
         if (selectedId == -1 || age.isEmpty() || weight.isEmpty() || height.isEmpty()) {
-            // Display toast message
             Toast.makeText(SignUp1.this, "Please fill all the fields", Toast.LENGTH_SHORT).show();
         } else {
-            // Your existing code to save user data
             RadioButton selectedGender = findViewById(selectedId);
-            String gender = selectedGender.getText().toString();
+            String gender = selectedGender.getText().toString(); // Ensure 'gender' is declared here
 
-            SharedPreferences sharedPref = getSharedPreferences("UserSignUpData", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("Gender", gender);
-            editor.putString("Age", age);
-            editor.putString("Weight", weight);
-            editor.putString("Height", height);
-            editor.apply();
-
-            // Intent to start the next activity
+            dbHelper.insertPersonalDetails(gender, Integer.parseInt(age), Double.parseDouble(weight), Double.parseDouble(height));
             Intent intent = new Intent(SignUp1.this, SignUp2.class);
             startActivity(intent);
         }
     }
+
 
 }
