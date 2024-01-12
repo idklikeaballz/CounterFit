@@ -96,13 +96,15 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         return null;
     }
-    public boolean emailExists(String email) {
+    public boolean isEmailExists(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_EMAIL}, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_EMAIL + " =?";
+        Cursor cursor = db.rawQuery(query, new String[]{email});
         boolean exists = cursor.getCount() > 0;
         cursor.close();
         return exists;
     }
+
     public void insertUserData(String email, String hashedPassword) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();

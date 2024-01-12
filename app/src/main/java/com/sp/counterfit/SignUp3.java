@@ -56,23 +56,27 @@ public class SignUp3 extends AppCompatActivity {
         String confirmPassword = confirmPasswordEditText.getText().toString();
 
         if (!validateInputs(email, password, confirmPassword)) {
-            // If validation fails, return early
+            Toast.makeText(this,"Email has been used", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Check if the email already exists
+        if (dbHelper.isEmailExists(email)) {
+            emailEditText.setError("Email already in use");
+            return;
+        }
         // Hash the password
         String hashedPassword = hashPassword(password);
         dbHelper.insertUserData(email, hashedPassword);
-
         // Save the email and hashed password using SharedPreferences
         saveTempUserData(email, hashedPassword);
-
         // Show a success message or navigate to the next screen
         Toast.makeText(this, "Sign Up Successful", Toast.LENGTH_SHORT).show();
 
         Intent intent = new Intent(SignUp3.this, Login.class);
         startActivity(intent);
     }
+
 
     private boolean validateInputs(String email, String password, String confirmPassword) {
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
