@@ -83,7 +83,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         // Add other cases for different menu items here
         // if (id == R.id.nav_home) { ... }
-
+        item.setChecked(true);
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }

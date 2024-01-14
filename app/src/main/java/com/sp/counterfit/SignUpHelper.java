@@ -113,9 +113,58 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
+    public UserDetails getUserDetailsByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        UserDetails userDetails = null;
 
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT},
+                COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
 
+        if (cursor != null && cursor.moveToFirst()) {
+            int idIndex = cursor.getColumnIndex(COLUMN_ID);
+            int genderIndex = cursor.getColumnIndex(COLUMN_GENDER);
+            int ageIndex = cursor.getColumnIndex(COLUMN_AGE);
+            int weightIndex = cursor.getColumnIndex(COLUMN_WEIGHT);
+            int heightIndex = cursor.getColumnIndex(COLUMN_HEIGHT);
 
+            if (idIndex != -1 && genderIndex != -1 && ageIndex != -1 && weightIndex != -1 && heightIndex != -1) {
+                userDetails = new UserDetails(
+                        cursor.getInt(idIndex),
+                        cursor.getString(genderIndex),
+                        cursor.getInt(ageIndex),
+                        cursor.getDouble(weightIndex),
+                        cursor.getDouble(heightIndex)
+                );
+            }
+            cursor.close();
+        }
 
+        db.close();
+        return userDetails;
+    }
+
+    // Class to hold user details
+    public static class UserDetails {
+        public int userId;
+        public String gender;
+        public int age;
+        public double weight;
+        public double height;
+
+        public UserDetails(int userId, String gender, int age, double weight, double height) {
+            this.userId = userId;
+            this.gender = gender;
+            this.age = age;
+            this.weight = weight;
+            this.height = height;
+        }
+    }
 
 }
+
+
+
+
+
+
+

@@ -4,6 +4,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient_card"
     tools:context=".Main">
 
     <!-- Main content area with Toolbar and ScrollView -->
@@ -20,22 +21,21 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#141E30"
-            android:paddingLeft="0dp"
-            android:paddingStart="0dp">
+            android:paddingStart="0dp"
+            android:paddingLeft="0dp">
 
             <TextView
                 android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Home"
-                android:gravity="center"
-                android:textSize="23sp"
                 android:fontFamily="@font/inter_bold"
+                android:gravity="center"
+                android:paddingLeft="0dp"
+                android:text="Home"
                 android:textColor="#FFFFFF"
-                android:paddingLeft="0dp" /> <!-- Adjust this value as needed -->
+                android:textSize="23sp" /> <!-- Adjust this value as needed -->
         </androidx.appcompat.widget.Toolbar>
-
 
 
         <ScrollView
@@ -50,8 +50,62 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Calorie Tracker CardView -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="149dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#78909C"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp">
 
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="149dp"
+                        android:background="@drawable/gradient_card"
+                        android:padding="16dp">
 
+                        <TextView
+                            android:id="@+id/textCalories"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginTop="-5dp"
+                            android:text="CALORIES"
+                            android:fontFamily="@font/inter_semibold"
+                            android:textColor="#013220" />
+
+                        <SeekBar
+                            android:id="@+id/seekBarCalories"
+                            android:layout_width="184dp"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/textCalories"
+                            android:layout_marginTop="90dp"
+                            android:max="2500"
+                            android:progress="1000"
+                            android:progressDrawable="@drawable/custom_progress_bar"
+                            android:secondaryProgress="2500"
+                            android:thumb="@drawable/custom_thumb" />
+
+                        <TextView
+                            android:id="@+id/textRemainingCalories"
+                            android:layout_width="117dp"
+                            android:layout_height="117dp"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginTop="0dp"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginBottom="0dp"
+                            android:background="@drawable/circle"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:fontFamily="@font/inter_semibold"
+                            android:text="1533 Remaining"
+                            android:textAppearance="?android:attr/textAppearanceMedium" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
             </LinearLayout>
         </ScrollView>
 
@@ -71,27 +125,32 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_gravity="start">
+        android:layout_gravity="start"
+        android:orientation="vertical">
 
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_topview"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:background="@drawable/drawer_bg"
             app:headerLayout="@layout/nav_header"
-            app:menu="@menu/drawer_menu"
-            android:background="@drawable/drawer_bg" />
+            app:itemIconTint="@color/nav_item_color_state"
+            app:itemTextColor="@color/nav_item_color_state"
+            app:menu="@menu/drawer_menu" />
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <com.google.android.material.navigation.NavigationView
-                android:layout_width="match_parent"
                 android:id="@+id/nav_bottomview"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:menu="@menu/menu_bottom_drawer"
-                android:background="#FFB6A5"/>
+                android:background="#FFB6A5"
+                app:itemIconTint="#FF0000"
+                app:itemTextColor="#FF0000"
+                app:menu="@menu/menu_bottom_drawer" />
         </FrameLayout>
     </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>
