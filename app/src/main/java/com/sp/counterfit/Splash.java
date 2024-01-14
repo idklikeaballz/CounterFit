@@ -6,6 +6,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,8 +40,17 @@ public class Splash extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent i = new Intent(Splash.this, Home.class);
-                startActivity(i);
+                if (isLoggedIn()) {
+                    // User is logged in, go to main activity
+                    Intent intent = new Intent(Splash.this, Main.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // User is not logged in, go to login activity
+                    Intent intent = new Intent(Splash.this, Home.class);
+                    startActivity(intent);
+                    finish();
+                }
                 finish();
             }
         }, 3000);
@@ -53,7 +63,14 @@ public class Splash extends AppCompatActivity {
                 mediaPlayer = null;
             }
         });
+
     }
+    private boolean isLoggedIn() {
+        SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        return sharedPreferences.getBoolean("IsLoggedIn", false);
+    }
+
+
 
     @Override
     protected void onDestroy() {

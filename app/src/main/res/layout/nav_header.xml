@@ -9,19 +9,23 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center">
+        android:layout_height="154dp"
+        android:layout_gravity="bottom|center"
+        android:layout_marginVertical="10dp"
+        android:layout_marginStart="0dp">
 
         <!-- Profile Icon -->
+        <!-- Replace with your profile icon drawable -->
+
+        <!-- Email TextView -->
         <ImageView
             android:id="@+id/profileIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="9dp"
-            android:src="@drawable/profile_user" /> <!-- Replace with your profile icon drawable -->
+            android:src="@drawable/profile_user" />
 
-        <!-- Email TextView -->
         <TextView
             android:id="@+id/emailTextView"
             android:layout_width="wrap_content"
@@ -29,7 +33,9 @@
             android:layout_below="@id/profileIcon"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="8dp"
-            android:text="user@example.com" /> <!-- Replace with the actual email -->
+            android:fontFamily="@font/inter_medium"
+            android:text=""
+           />
 
     </RelativeLayout>
 

@@ -11,5 +11,6 @@
     <color name="headerbg">#141E30</color>
     <color name="gradient_start">#3700B3</color>
     <color name="gradient_end">#25b8d5</color>
+    <color name="light_blue">#386BF6</color>
 
 </resources>
