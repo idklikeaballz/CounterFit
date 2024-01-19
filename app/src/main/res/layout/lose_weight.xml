@@ -22,7 +22,7 @@
             android:fontFamily="@font/inter_semibold"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Gain 0.2 kg per week"
+            android:text="Lose 0.2 kg per week"
             android:textColor="@color/radiobuttoncolor"
             android:textSize="16sp" />
 
@@ -36,7 +36,7 @@
             android:fontFamily="@font/inter_semibold"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Gain 0.5 kg per week"
+            android:text="Lose 0.5 kg per week"
             android:textColor="@color/radiobuttoncolor"
             android:textSize="16sp" />
 

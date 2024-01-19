@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@android:color/transparent" /> <!-- Adjust the background color as needed -->
+    <stroke android:width="3dp" android:color="#FADADD" /> <!-- Adjust the stroke color and width as needed -->
+    <padding android:left="30dp" android:top="30dp" android:right="30dp" android:bottom="30dp" /> <!-- Adjust the padding as needed -->
+    <corners android:radius="100dp" /> <!-- This will make it round -->
+
+</shape>

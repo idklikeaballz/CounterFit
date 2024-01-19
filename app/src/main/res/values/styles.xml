@@ -7,4 +7,10 @@
         <item name="fontFamily">@font/inter_semibold</item>
         <item name="android:textSize">23sp</item>
     </style>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <!-- Ensure windowActionBar is set to false and windowNoTitle is set to true. -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

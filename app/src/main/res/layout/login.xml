@@ -32,7 +32,7 @@
             android:padding="8dp"
             android:textColor="#A2D9FF"
             android:textColorHint="#858C94" />
-</com.google.android.material.textfield.TextInputLayout>
+    </com.google.android.material.textfield.TextInputLayout>
 
 
 
@@ -64,62 +64,40 @@
             android:textColor="#A2D9FF"
             android:textColorHint="#858C94" />
 
-        <TextView
-            android:layout_width="369dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/text_view_with_border"
-            android:drawableStart="@drawable/info"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="10 characters minimum"
-            android:textColor="#858C94"
-            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutConfirmPassword"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:padding="4dp"
-        app:boxStrokeColor="#858C94"
-        app:boxStrokeWidth="2dp"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
-        app:hintEnabled="true"
-        app:hintAnimationEnabled="true"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/ConfirmPassword"
-        android:layout_width="match_parent"
-        android:layout_height="47dp"
-        android:hint="Confirm Password"
-        android:inputType="text|textPassword"
-        android:padding="8dp"
-        android:textColor="#A2D9FF"
-        android:textColorHint="#858C94" />
-</com.google.android.material.textfield.TextInputLayout>
+        <CheckBox
+            android:id="@+id/checkbox_remember_me"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:text="Remember Me"
+            android:textColor="#858C94"
+            android:fontFamily="@font/inter_medium"
+            android:textSize="16sp" />
 
-    <!-- Password Requirement Indicator -->
-
-    <!-- Next Button -->
-
+    </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="280dp"
+        android:layout_marginTop="320dp"
         android:background="@drawable/next_button"
         android:padding="12dp"
-        android:text="Create"
+        android:text="Login"
         android:textColor="@color/white" />
-
-</LinearLayout>
+    </LinearLayout>
