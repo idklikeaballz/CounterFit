@@ -10,9 +10,13 @@ import android.util.Log;
 import java.io.Serializable;
 
 public class SignUpHelper extends SQLiteOpenHelper {
+    private static final String TIPS_TABLE_NAME = "Tips";
+    private static final String COLUMN_TIP_ID = "id";
+    private static final String COLUMN_TIP_TEXT = "text";
+
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 5;
     private static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
@@ -24,6 +28,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_WEIGHT_GOAL = "weightGoal";
     private static final String SESSION_TABLE_NAME = "CurrentSession";
     private static final String SESSION_COLUMN_USER_ID = "userId";
+    private static final String CREATE_TIPS_TABLE = "CREATE TABLE " + TIPS_TABLE_NAME + "("
+            + COLUMN_TIP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_TIP_TEXT + " TEXT)";
+
 
     private static final String CREATE_SESSION_TABLE = "CREATE TABLE " + SESSION_TABLE_NAME + "("
             + SESSION_COLUMN_USER_ID + " INTEGER PRIMARY KEY)";
@@ -47,16 +55,38 @@ public class SignUpHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_SESSION_TABLE);
+        db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
+        insertInitialTips(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
-        if (oldVersion < 2) {
+        if (oldVersion < 4) {
             // Only create the CurrentSession table if it doesn't exist
             db.execSQL(CREATE_SESSION_TABLE);
+
         }
         // Add more conditions here for other database upgrades
+    }
+    private void insertInitialTips(SQLiteDatabase db) {
+        String[] tips = {
+                "Tip: Drink plenty of water every day!",
+                "Tip: Sleep is just as important as diet and exercise.",
+                "Tip: Consistency is key to a healthy lifestyle.",
+                "Tip: Eat balanced, exercise, sleep well, hydrate, manage stress, avoid smoking.",
+                "Tip: Limit sugar, prioritize vegetables, stay active, avoid excessive alcohol, practice mindfulness.",
+                "Tip: Limit caffeine, avoid excessive salt, practice moderation, foster a support system.",
+                "Tip: Choose whole grains, vary your workouts, practice self-care, stay positive.",
+                "Tip: Prioritize sleep, manage screen time, maintain social connections, practice gratitude.",
+                "Tip: Stay hydrated, portion control, reduce processed foods, get regular check-ups."
+        };
+
+        for (String tip : tips) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_TIP_TEXT, tip);
+            db.insert(TIPS_TABLE_NAME, null, values);
+        }
     }
 
 
@@ -215,6 +245,37 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return userDetails;
     }
+    public String getRandomTip() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String tip = null;
+
+        Cursor cursor = db.query(
+                TIPS_TABLE_NAME,
+                new String[]{COLUMN_TIP_TEXT},
+                null,
+                null,
+                null,
+                null,
+                "RANDOM()",
+                "1"
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int index = cursor.getColumnIndex(COLUMN_TIP_TEXT);
+            if (index != -1) {
+                tip = cursor.getString(index);
+            } else {
+                Log.e("SignUpHelper", "Column not found: " + COLUMN_TIP_TEXT);
+            }
+            cursor.close();
+        } else {
+            Log.e("SignUpHelper", "No tips found in the database.");
+        }
+
+        db.close();
+        return tip;
+    }
+
 
     public void clearCurrentSession() {
         SQLiteDatabase db = this.getWritableDatabase();

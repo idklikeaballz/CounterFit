@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -26,6 +28,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private BottomNavigationView bottomNavigationView;
     private TextView textRemainingCalories;
     private SeekBar slider;
+    private TextView textTipOfTheDay; // TextView for the tip of the day
+    private ImageButton closeTipButton; // Button to close the tip
+
+    private RelativeLayout tipContainer; // RelativeLayout for the tip of the day
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +45,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         textRemainingCalories = findViewById(R.id.textRemainingCalories);
         slider = findViewById(R.id.seekBarCalories);
+        textTipOfTheDay = findViewById(R.id.tipTextView);
+        closeTipButton = findViewById(R.id.closeTipButton);
+        tipContainer = findViewById(R.id.tipbg); // Assign the ID of the RelativeLayout
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -51,6 +61,17 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        closeTipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textTipOfTheDay.setVisibility(View.GONE); // Hide the tip TextView
+                closeTipButton.setVisibility(View.GONE); // Hide the close button
+                tipContainer.setVisibility(View.GONE);
+                saveTipVisibilityState(false);
+            }
+        });
+
+        displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
     }
 
@@ -71,7 +92,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 slider.setFocusable(false);
                 slider.setClickable(false);
                 slider.setEnabled(false);
-                textRemainingCalories.setText(String.format("%s kcal Remaining", (int) bmr));
+                textRemainingCalories.setText(String.format("%s Remaining", (int) bmr));
 
                 View headerView = navigationView.getHeaderView(0);
                 TextView emailTextView = headerView.findViewById(R.id.emailTextView);
@@ -153,4 +174,30 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             super.onBackPressed();
         }
     }
+    private void displayRandomTip() {
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isTipVisible = sharedPreferences.getBoolean("IsTipVisible", true);
+
+        if (!isTipVisible) {
+            tipContainer.setVisibility(View.GONE); // Hide the tip container if it was previously closed
+            return;
+        }
+
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String randomTip = dbHelper.getRandomTip(); // Method in SignUpHelper to get a random tip
+        if (randomTip != null) {
+            textTipOfTheDay.setText(randomTip);
+        } else {
+            textTipOfTheDay.setText("No tip for today. Stay tuned!"); // Default message
+        }
+    }
+    private void saveTipVisibilityState(boolean isVisible) {
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("IsTipVisible", isVisible);
+        editor.apply();
+    }
+
+
+
 }
