@@ -62,12 +62,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
             if (userDetails != null) {
                 double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
-
-                // Adjust BMR based on weight goal
                 bmr = adjustBMRBasedOnWeightGoal(bmr, userDetails.weightGoal);
 
+                // Set maximum value of SeekBar to calculated BMR
+                slider.setMax((int) bmr);
+                // Set initial progress of SeekBar to 0
+                slider.setProgress(0);
+                slider.setFocusable(false);
+                slider.setClickable(false);
+                slider.setEnabled(false);
                 textRemainingCalories.setText(String.format("%s kcal Remaining", (int) bmr));
-                slider.setProgress((int) bmr);
 
                 View headerView = navigationView.getHeaderView(0);
                 TextView emailTextView = headerView.findViewById(R.id.emailTextView);
@@ -114,6 +118,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (id == R.id.nav_logout) {
             Log.d("NavigationView", "Logout clicked");
             logoutUser();
+        } else if (id == R.id.nav_home) {
+            Intent intent = new Intent(this, Main.class);
+            startActivity(intent);
         }
 
         item.setChecked(true);
