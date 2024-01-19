@@ -21,9 +21,15 @@ public class SignUp2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up2);
         RadioButton radioButtonGainWeight = findViewById(R.id.radioButtonGainWeight);
-        RadioButton radioButtonLoseWeight=findViewById(R.id.radioButtonLoseWeight);
-        RadioButton radioButtonMaintainWeight=findViewById(R.id.radioButtonMaintainWeight);
+        RadioButton radioButtonLoseWeight = findViewById(R.id.radioButtonLoseWeight);
+        RadioButton radioButtonMaintainWeight = findViewById(R.id.radioButtonMaintainWeight);
         Button buttonNext = findViewById(R.id.buttonNext);
+
+        // Receive data from SignUp1
+        String gender = getIntent().getStringExtra("gender");
+        int age = getIntent().getIntExtra("age", 0);
+        double weight = getIntent().getDoubleExtra("weight", 0.0);
+        double height = getIntent().getDoubleExtra("height", 0.0);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -34,23 +40,26 @@ public class SignUp2 extends AppCompatActivity {
         buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Check if the "Gain Weight" radio button is selected
+                Intent intent;
                 if (radioButtonGainWeight.isChecked()) {
-                    // Start the GainWeight activity
-                    Intent intent = new Intent(SignUp2.this, GainWeight.class);
-                    startActivity(intent);
+                    intent = new Intent(SignUp2.this, GainWeight.class);
                 } else if (radioButtonLoseWeight.isChecked()) {
-                    Intent intent1 = new Intent(SignUp2.this, LoseWeight.class);
-                    startActivity(intent1);
+                    intent = new Intent(SignUp2.this, LoseWeight.class);
                 } else if (radioButtonMaintainWeight.isChecked()) {
-                    Intent intent2 = new Intent(SignUp2.this,SignUp3.class);
-                    startActivity(intent2);
-                }else {
+                    intent = new Intent(SignUp2.this, SignUp3.class);
+                    intent.putExtra("weightGoal", "Maintain Weight");
+                } else {
                     Toast.makeText(getApplicationContext(), "Please select an Option", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
+                // Pass the received data to the next activity
+                intent.putExtra("gender", gender);
+                intent.putExtra("age", age);
+                intent.putExtra("weight", weight);
+                intent.putExtra("height", height);
+                startActivity(intent);
             }
         });
     }
-
 }

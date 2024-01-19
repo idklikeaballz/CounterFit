@@ -6,7 +6,7 @@
     android:padding="0dp">
 
     <RadioGroup
-        android:id="@+id/goalRadioGroup2"
+        android:id="@+id/loseweightRadioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="34dp"
@@ -46,7 +46,7 @@
         android:id="@+id/buttonNext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/goalRadioGroup2"
+        android:layout_below="@+id/loseweightRadioGroup"
         android:layout_marginTop="398dp"
         android:background="@drawable/next_button"
         android:gravity="center"

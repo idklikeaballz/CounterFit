@@ -54,13 +54,18 @@ public class Login extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
         boolean isLoggedIn = sharedPreferences.getBoolean("IsLoggedIn", false);
         if (isLoggedIn) {
-            String email = sharedPreferences.getString("Email", null); // Get stored email
-            Intent intent = new Intent(Login.this, Main.class);
-            intent.putExtra("user_email", email); // Pass email to Main
-            startActivity(intent);
-            finish();
+            // Retrieve email from shared preferences
+            String email = sharedPreferences.getString("Email", null);
+
+            // Proceed only if email is not null
+            if (email != null) {
+                Intent intent = new Intent(Login.this, Main.class);
+                startActivity(intent);
+                finish();
+            }
         }
     }
+
 
     private void attemptLogin() {
         String email = emailEditText.getText().toString().trim();
@@ -73,30 +78,36 @@ public class Login extends AppCompatActivity {
 
         User user = dbHelper.getUserByEmail(email);
         if (user != null && user.getPassword().equals(hashPassword(password))) {
-            if (rememberMeCheckBox.isChecked()) {
-                saveLoginStatus(true, email); // Save login status with email if "Remember Me" is checked
-            } else {
-                saveLoginStatus(false, null); // Do not save email if "Remember Me" is not checked
-            }
+            // Save login status with user details if "Remember Me" is checked
+            saveLoginStatus(rememberMeCheckBox.isChecked(), email, hashPassword(password));
 
-            // Start Main activity and pass email
-            Intent intent = new Intent(Login.this, Main.class);
-            intent.putExtra("user_email", email); // Always pass email to Main activity
-            startActivity(intent);
-            finish();
+            // Pass the user details to Main activity
+            SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(email);
+            if (userDetails != null) {
+                dbHelper.setCurrentSession(userDetails.userId);
+                Intent intent = new Intent(Login.this, Main.class);
+                intent.putExtra("userDetails", userDetails); // Passing userDetails
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(this, "User details not found", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void saveLoginStatus(boolean isLoggedIn, String email) {
+
+    private void saveLoginStatus(boolean isLoggedIn, String email, String hashedPassword) {
         SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("IsLoggedIn", isLoggedIn);
         if (isLoggedIn && email != null) {
             editor.putString("Email", email); // Store email if logged in
+            editor.putString("HashedPassword", hashedPassword); // Store hashed password
         } else {
             editor.remove("Email"); // Remove email if not logged in
+            editor.remove("HashedPassword"); // Remove hashed password
         }
         editor.apply();
     }
@@ -119,4 +130,5 @@ public class Login extends AppCompatActivity {
             return null; // Handle this case appropriately
         }
     }
+
 }

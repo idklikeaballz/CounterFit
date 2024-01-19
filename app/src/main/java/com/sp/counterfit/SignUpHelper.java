@@ -5,22 +5,28 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import java.io.Serializable;
 
 public class SignUpHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 1;
-    private static final String TABLE_NAME = "SignUpDetails";
+    private static final int DATABASE_VERSION = 3;
+    private static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
     private static final String COLUMN_AGE = "age";
     private static final String COLUMN_WEIGHT = "weight";
     private static final String COLUMN_HEIGHT = "height";
-    private static final String COLUMN_EMAIL = "email"; // New column for email
-    private static final String COLUMN_PASSWORD = "password"; // New column for password
-    private static final String PREFERENCES_TABLE_NAME = "UserPreferences";
-    private static final String COLUMN_USER_ID = "userId";
+    private static final String COLUMN_EMAIL = "email";
+    private static final String COLUMN_PASSWORD = "password";
     private static final String COLUMN_WEIGHT_GOAL = "weightGoal";
+    private static final String SESSION_TABLE_NAME = "CurrentSession";
+    private static final String SESSION_COLUMN_USER_ID = "userId";
+
+    private static final String CREATE_SESSION_TABLE = "CREATE TABLE " + SESSION_TABLE_NAME + "("
+            + SESSION_COLUMN_USER_ID + " INTEGER PRIMARY KEY)";
 
     private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -28,14 +34,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
             + COLUMN_AGE + " INTEGER,"
             + COLUMN_WEIGHT + " REAL,"
             + COLUMN_HEIGHT + " REAL,"
-            + COLUMN_EMAIL + " TEXT UNIQUE," // Adding email column
-            + COLUMN_PASSWORD + " TEXT" // Adding password column
+            + COLUMN_EMAIL + " TEXT UNIQUE,"
+            + COLUMN_PASSWORD + " TEXT,"
+            + COLUMN_WEIGHT_GOAL + " TEXT" // Added column for weight goal
             + ")";
-
-    private static final String CREATE_PREFERENCES_TABLE = "CREATE TABLE " + PREFERENCES_TABLE_NAME + "("
-            + COLUMN_USER_ID + " INTEGER PRIMARY KEY,"
-            + COLUMN_WEIGHT_GOAL + " TEXT,"
-            + "FOREIGN KEY (" + COLUMN_USER_ID + ") REFERENCES " + TABLE_NAME + "(" + COLUMN_ID + "))";
 
     public SignUpHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,39 +46,63 @@ public class SignUpHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE);
-        db.execSQL(CREATE_PREFERENCES_TABLE);
+        db.execSQL(CREATE_SESSION_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // For simplicity, just drop the old table and create a new one
-        // In a real app, you would migrate data from the old to the new schema
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + PREFERENCES_TABLE_NAME);
-        onCreate(db);
+        // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
+        if (oldVersion < 2) {
+            // Only create the CurrentSession table if it doesn't exist
+            db.execSQL(CREATE_SESSION_TABLE);
+        }
+        // Add more conditions here for other database upgrades
     }
 
-    public void insertPersonalDetails(String gender, int age, double weight, double height) {
+
+    public void insertUserDetails(String gender, int age, double weight, double height,
+                                  String email, String hashedPassword, String weightGoal) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_GENDER, gender);
         values.put(COLUMN_AGE, age);
         values.put(COLUMN_WEIGHT, weight);
         values.put(COLUMN_HEIGHT, height);
+        values.put(COLUMN_EMAIL, email);
+        values.put(COLUMN_PASSWORD, hashedPassword);
+        values.put(COLUMN_WEIGHT_GOAL, weightGoal); // Insert weight goal
+
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
 
+    public UserDetails getUserDetailsByEmail(String email) {
+        if (email == null) {
+            Log.d("SignUpHelper", "Email is null, cannot query database.");
+            return null;
+        }
 
-    public void insertOrUpdateGoal(int userId, String weightGoal) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_USER_ID, userId);
-        values.put(COLUMN_WEIGHT_GOAL, weightGoal);
+        SQLiteDatabase db = this.getReadableDatabase();
+        UserDetails userDetails = null;
 
-        // Insert or update the preference
-        db.insertWithOnConflict(PREFERENCES_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_EMAIL, COLUMN_WEIGHT_GOAL},
+                COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            userDetails = new UserDetails(
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENDER)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT)),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_HEIGHT)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)) // Retrieve the weight goal
+            );
+            cursor.close();
+        }
+
         db.close();
+        return userDetails;
     }
     public User getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -105,37 +131,84 @@ public class SignUpHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    public void insertUserData(String email, String hashedPassword) {
+    // Class to hold user details
+    public static class UserDetails implements Serializable {
+        public int userId;
+        public String gender;
+        public int age;
+        public double weight;
+        public double height;
+        public String email;
+        public String weightGoal;
+
+        public UserDetails(int userId, String gender, int age, double weight, double height, String email, String weightGoal) {
+            this.userId = userId;
+            this.gender = gender;
+            this.age = age;
+            this.weight = weight;
+            this.height = height;
+            this.email = email;
+            this.weightGoal = weightGoal;
+        }
+
+    }
+
+
+    public void setCurrentSession(int userId) {
         SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(SESSION_TABLE_NAME, null, null); // Clear previous session
+
         ContentValues values = new ContentValues();
-        values.put(COLUMN_EMAIL, email);
-        values.put(COLUMN_PASSWORD, hashedPassword);
-        db.insert(TABLE_NAME, null, values);
+        values.put(SESSION_COLUMN_USER_ID, userId);
+        db.insert(SESSION_TABLE_NAME, null, values);
         db.close();
     }
-    public UserDetails getUserDetailsByEmail(String email) {
+
+    public int getCurrentUserId() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int currentUserId = -1;
+
+        Cursor cursor = db.query(SESSION_TABLE_NAME, new String[]{SESSION_COLUMN_USER_ID},
+                null, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            currentUserId = cursor.getInt(cursor.getColumnIndexOrThrow(SESSION_COLUMN_USER_ID));
+            cursor.close();
+        } else {
+            Log.e("SignUpHelper", "Current session not found.");
+        }
+
+        db.close();
+        return currentUserId;
+    }
+    public String getCurrentUserEmail() {
+        int currentUserId = getCurrentUserId();
+        if (currentUserId == -1) {
+            Log.d("SignUpHelper", "No current user ID found.");
+            return null;
+        }
+
+        UserDetails userDetails = getUserDetailsById(currentUserId);
+        return userDetails != null ? userDetails.email : null;
+    }
+
+    private UserDetails getUserDetailsById(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         UserDetails userDetails = null;
 
-        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT},
-                COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_EMAIL, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_WEIGHT_GOAL},
+                COLUMN_ID + "=?", new String[]{String.valueOf(userId)}, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
-            int idIndex = cursor.getColumnIndex(COLUMN_ID);
-            int genderIndex = cursor.getColumnIndex(COLUMN_GENDER);
-            int ageIndex = cursor.getColumnIndex(COLUMN_AGE);
-            int weightIndex = cursor.getColumnIndex(COLUMN_WEIGHT);
-            int heightIndex = cursor.getColumnIndex(COLUMN_HEIGHT);
-
-            if (idIndex != -1 && genderIndex != -1 && ageIndex != -1 && weightIndex != -1 && heightIndex != -1) {
-                userDetails = new UserDetails(
-                        cursor.getInt(idIndex),
-                        cursor.getString(genderIndex),
-                        cursor.getInt(ageIndex),
-                        cursor.getDouble(weightIndex),
-                        cursor.getDouble(heightIndex)
-                );
-            }
+            userDetails = new UserDetails(
+                    userId,
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENDER)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT)),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_HEIGHT)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)) // Retrieve the weight goal
+            );
             cursor.close();
         }
 
@@ -143,21 +216,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
         return userDetails;
     }
 
-    // Class to hold user details
-    public static class UserDetails {
-        public int userId;
-        public String gender;
-        public int age;
-        public double weight;
-        public double height;
-
-        public UserDetails(int userId, String gender, int age, double weight, double height) {
-            this.userId = userId;
-            this.gender = gender;
-            this.age = age;
-            this.weight = weight;
-            this.height = height;
-        }
+    public void clearCurrentSession() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(SESSION_TABLE_NAME, null, null);
+        db.close();
     }
 
 }
