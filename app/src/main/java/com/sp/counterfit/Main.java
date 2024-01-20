@@ -49,6 +49,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private SensorEventListener stepListener;
     private int stepCount = 0;
     private double baseBMR;
+    private TextView stepsTextView;
 
 
     @Override
@@ -58,40 +59,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         isFirstLaunch = true;
 
         // Initialize UI components
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_topview); // Correct ID for the top NavigationView
-        NavigationView botNavigationView = findViewById(R.id.nav_bottomview);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-        textRemainingCalories = findViewById(R.id.textRemainingCalories);
-        slider = findViewById(R.id.seekBarCalories);
-        textTipOfTheDay = findViewById(R.id.tipTextView);
-        closeTipButton = findViewById(R.id.closeTipButton);
-        tipContainer = findViewById(R.id.tipbg); // Assign the ID of the RelativeLayout
-        ImageView recoAddImageView = findViewById(R.id.reco_add);
-        setupBottomNavigationView();
-
-        recoAddImageView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // Create an Intent to start the RecommendActivity
-                Intent intent = new Intent(Main.this, Recommend.class);
-                startActivity(intent);
-            }
-        });
+        initializeUI();
+        setupStepCounter();
+        retrieveAndDisplayUserBMR();
 
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("");
-        navigationView.setNavigationItemSelectedListener(this); // Set listener for top NavigationView
-        botNavigationView.setNavigationItemSelectedListener(this);
-
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
         SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String lastShownDate = appPrefs.getString("LastShownDate", "");
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
@@ -114,15 +86,46 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 saveTipVisibilityState(false);
             }
         });
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
-            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-            setupStepCounter();
-        }
+        setupStepCounter();
 
         displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
-        setupStep();
+
+    }
+
+    private void initializeUI() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_topview);
+        NavigationView botNavigationView = findViewById(R.id.nav_bottomview);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        textRemainingCalories = findViewById(R.id.textRemainingCalories);
+        stepsTextView = findViewById(R.id.stepsTextView);
+        slider = findViewById(R.id.seekBarCalories);
+        textTipOfTheDay = findViewById(R.id.tipTextView);
+        closeTipButton = findViewById(R.id.closeTipButton);
+        tipContainer = findViewById(R.id.tipbg);
+        ImageView recoAddImageView = findViewById(R.id.reco_add);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("");
+        navigationView.setNavigationItemSelectedListener(this);
+        botNavigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        recoAddImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main.this, Recommend.class);
+                startActivity(intent);
+            }
+        });
+
+        setupBottomNavigationView();
     }
     private void setupStep(){
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -139,45 +142,36 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (currentUserEmail != null) {
             SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
             if (userDetails != null) {
-                double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
-                bmr = adjustBMRBasedOnWeightGoal(bmr, userDetails.weightGoal);
+                baseBMR = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+                baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, userDetails.weightGoal);
 
-                // Set maximum value of SeekBar to calculated BMR
-                slider.setMax((int) bmr);
-                // Set initial progress of SeekBar to 0
+                // Rounding to the nearest whole number
+                int roundedBMR = (int) Math.round(baseBMR);
+
+                slider.setMax(roundedBMR);
                 slider.setProgress(0);
                 slider.setFocusable(false);
                 slider.setClickable(false);
                 slider.setEnabled(false);
-                textRemainingCalories.setText(String.format("%s Remaining", (int) bmr));
-
-                View headerView = navigationView.getHeaderView(0);
-                TextView emailTextView = headerView.findViewById(R.id.emailTextView);
-                emailTextView.setText(currentUserEmail);
+                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d kcal Remaining", roundedBMR));
             } else {
                 textRemainingCalories.setText("User details not found");
                 slider.setProgress(0);
             }
         } else {
             Log.d("Main", "No current user email found.");
-            // Optional: Redirect to login screen or show error message
         }
     }
 
+
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
-            case "Gain 0.2 kg per week":
-                return bmr + 200;
-            case "Gain 0.5 kg per week":
-                return bmr + 500;
-            case "Maintain Weight":
-                return bmr;
-            case "Lose 0.2 kg per week":
-                return bmr - 200;
-            case "Lose 0.5 kg per week":
-                return bmr - 500;
-            default:
-                return bmr; // Default case if the weight goal is not recognized
+            case "Gain 0.2 kg per week": return bmr + 200;
+            case "Gain 0.5 kg per week": return bmr + 500;
+            case "Maintain Weight": return bmr;
+            case "Lose 0.2 kg per week": return bmr - 200;
+            case "Lose 0.5 kg per week": return bmr - 500;
+            default: return bmr;
         }
     }
 
@@ -188,6 +182,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
         }
     }
+
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -222,6 +217,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         });
     }
+
 
     private void logoutUser() {
         // Clear the current session from the database
@@ -287,25 +283,33 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
     private void setupStepCounter() {
-        stepListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-                    stepCount = (int) event.values[0];
-                    updateStepCount();
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
+            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+            stepListener = new SensorEventListener() {
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                        stepCount = (int) event.values[0];
+                        stepsTextView.setText(String.valueOf(stepCount)); // Update steps count on the TextView
+                        calculateAndDisplayUpdatedBMR();
+                    }
                 }
-            }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                // Optional: Handle sensor accuracy changes
-            }
-        };
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                    // Optional: Handle sensor accuracy changes
+                }
+            };
+            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+        }
     }
-    private void updateStepCount() {
-        TextView stepsTextView = findViewById(R.id.stepsTextView);
-        stepsTextView.setText(String.valueOf(stepCount));
+    private void calculateAndDisplayUpdatedBMR() {
+        double updatedBMR = baseBMR + (stepCount * 0.04);
+        int roundedBMR = (int) Math.round(updatedBMR); // Round to nearest whole number
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", roundedBMR));
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -322,6 +326,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
 
-
-
 }
+
+
+
