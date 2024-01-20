@@ -127,13 +127,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         setupBottomNavigationView();
     }
-    private void setupStep(){
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
-            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-            setupStepCounter();
-        }
-    }
+
 
     private void retrieveAndDisplayUserBMR() {
         SignUpHelper dbHelper = new SignUpHelper(this);
@@ -141,6 +135,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         if (currentUserEmail != null) {
             SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
+
             if (userDetails != null) {
                 baseBMR = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
                 baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, userDetails.weightGoal);
@@ -153,7 +148,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 slider.setFocusable(false);
                 slider.setClickable(false);
                 slider.setEnabled(false);
-                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d kcal Remaining", roundedBMR));
+                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", roundedBMR));
+
+                // Set the current user email to the emailTextView in the NavigationView header
+                View headerView = navigationView.getHeaderView(0);
+                TextView emailTextView = headerView.findViewById(R.id.emailTextView);
+                emailTextView.setText(currentUserEmail);
             } else {
                 textRemainingCalories.setText("User details not found");
                 slider.setProgress(0);
@@ -162,6 +162,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Log.d("Main", "No current user email found.");
         }
     }
+
 
 
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
