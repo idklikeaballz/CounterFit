@@ -7,8 +7,13 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +44,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     private RelativeLayout tipContainer; // RelativeLayout for the tip of the day
     private boolean isFirstLaunch;
+    private SensorManager sensorManager;
+    private Sensor stepCounterSensor;
+    private SensorEventListener stepListener;
+    private int stepCount = 0;
+    private double baseBMR;
 
 
     @Override
@@ -104,9 +114,22 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 saveTipVisibilityState(false);
             }
         });
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
+            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+            setupStepCounter();
+        }
 
         displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
+        setupStep();
+    }
+    private void setupStep(){
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
+            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+            setupStepCounter();
+        }
     }
 
     private void retrieveAndDisplayUserBMR() {
@@ -261,6 +284,41 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             tipContainer.setVisibility(View.GONE); // Hide the tip container if it was previously closed
         } else {
             displayRandomTip(); // Display the tip if it is visible
+        }
+    }
+    private void setupStepCounter() {
+        stepListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                    stepCount = (int) event.values[0];
+                    updateStepCount();
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                // Optional: Handle sensor accuracy changes
+            }
+        };
+    }
+    private void updateStepCount() {
+        TextView stepsTextView = findViewById(R.id.stepsTextView);
+        stepsTextView.setText(String.valueOf(stepCount));
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (stepCounterSensor != null) {
+            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (stepCounterSensor != null) {
+            sensorManager.unregisterListener(stepListener);
         }
     }
 

@@ -164,7 +164,7 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:layout_width="150dp"
+                                android:layout_width="138dp"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_semibold"
                                 android:gravity="center"
@@ -173,7 +173,7 @@
 
                             <ImageView
                                 android:id="@+id/reco_add"
-                                android:layout_width="151dp"
+                                android:layout_width="138dp"
                                 android:layout_height="92dp"
                                 android:background="#BBF246"
                                 android:src="@drawable/plus" />
@@ -197,7 +197,7 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:layout_width="154dp"
+                                android:layout_width="123dp"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_semibold"
                                 android:gravity="center"
@@ -207,7 +207,7 @@
 
                             <TextView
                                 android:id="@+id/stepsTextView"
-                                android:layout_width="154dp"
+                                android:layout_width="121dp"
                                 android:layout_height="93dp"
                                 android:fontFamily="@font/inter_semibold"
                                 android:gravity="center"
