@@ -82,6 +82,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             checkTipVisibility();
         }
 
+
         closeTipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,6 +125,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         tipContainer = findViewById(R.id.tipbg);
         ImageView recoAddImageView = findViewById(R.id.reco_add);
 
+        View headerView = navigationView.getHeaderView(0);
+        ImageView profileIcon = headerView.findViewById(R.id.profileIcon);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -139,6 +143,17 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Intent intent = new Intent(Main.this, Recommend.class);
             recommendActivityResultLauncher.launch(intent);
         });
+        if (profileIcon != null) {
+            profileIcon.setOnClickListener(v -> {
+                // Handle the profile icon click, launching the profile activity
+                Intent intent = new Intent(Main.this, Profile.class); // Replace with your profile activity class
+                startActivity(intent);
+            });
+        } else {
+            // Handle the case where the ImageView is not found
+            Log.e("Main", "Profile icon not found");
+        }
+
 
         setupBottomNavigationView();
     }
@@ -229,6 +244,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
+
     private void setupBottomNavigationView() {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -246,6 +262,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         });
     }
+
 
 
     private void logoutUser() {
