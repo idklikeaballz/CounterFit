@@ -185,7 +185,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }
     private void updateSliderProgress(int calories) {
         slider.setProgress(slider.getMax() - calories); // Update slider based on calories remaining
+        if (calories>=0)
         textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
+        else {
+            textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Over", Math.abs(calories)));
+        }
     }
     private void checkAndResetCaloriesDaily() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
