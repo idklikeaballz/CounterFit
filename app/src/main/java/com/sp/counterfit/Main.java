@@ -1,5 +1,7 @@
 package com.sp.counterfit;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,7 +35,8 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+    private ActivityResultLauncher<Intent> recommendActivityResultLauncher;
+    private int caloriesRemaining;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private BottomNavigationView bottomNavigationView;
@@ -62,6 +65,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         initializeUI();
         setupStepCounter();
         retrieveAndDisplayUserBMR();
+        checkAndResetCaloriesDaily();
+
 
 
         SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -91,6 +96,19 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
 
+        recommendActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // Get data from the result
+                        Intent data = result.getData();
+                        if (data != null) {
+                            int addedCalories = data.getIntExtra("addedCalories", 0);
+                            updateRemainingCalories(addedCalories);
+                        }
+                    }
+                });
+
     }
 
     private void initializeUI() {
@@ -117,15 +135,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        recoAddImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Main.this, Recommend.class);
-                startActivity(intent);
-            }
+        recoAddImageView.setOnClickListener(v -> {
+            Intent intent = new Intent(Main.this, Recommend.class);
+            recommendActivityResultLauncher.launch(intent);
         });
 
         setupBottomNavigationView();
+    }
+    private void updateRemainingCalories(int addedCalories) {
+        caloriesRemaining -= addedCalories; // Subtract added calories
+        updateSliderProgress(caloriesRemaining);
     }
 
 
@@ -141,14 +160,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, userDetails.weightGoal);
 
                 // Rounding to the nearest whole number
-                int roundedBMR = (int) Math.round(baseBMR);
+                caloriesRemaining = (int) Math.round(baseBMR); // Initialize caloriesRemaining
+                updateSliderProgress(caloriesRemaining);
 
-                slider.setMax(roundedBMR);
+
+                slider.setMax(caloriesRemaining);
                 slider.setProgress(0);
                 slider.setFocusable(false);
                 slider.setClickable(false);
                 slider.setEnabled(false);
-                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", roundedBMR));
+                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
 
                 // Set the current user email to the emailTextView in the NavigationView header
                 View headerView = navigationView.getHeaderView(0);
@@ -162,6 +183,23 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Log.d("Main", "No current user email found.");
         }
     }
+    private void updateSliderProgress(int calories) {
+        slider.setProgress(slider.getMax() - calories); // Update slider based on calories remaining
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
+    }
+    private void checkAndResetCaloriesDaily() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String lastResetDate = prefs.getString("LastResetDate", "");
+
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        if (!currentDate.equals(lastResetDate)) {
+            retrieveAndDisplayUserBMR(); // Reset caloriesRemaining
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("LastResetDate", currentDate);
+            editor.apply();
+        }
+    }
+
 
 
 
@@ -307,8 +345,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }
     private void calculateAndDisplayUpdatedBMR() {
         double updatedBMR = baseBMR + (stepCount * 0.04);
-        int roundedBMR = (int) Math.round(updatedBMR); // Round to nearest whole number
-        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", roundedBMR));
+        caloriesRemaining = (int) Math.round(updatedBMR); // Update caloriesRemaining
+        updateSliderProgress(caloriesRemaining);
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
     }
 
     @Override

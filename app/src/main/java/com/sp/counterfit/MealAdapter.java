@@ -12,12 +12,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder> {
-    // Example data structure for meal items
     private List<MealItem> mealItems;
+    private OnMealClickListener listener;
 
-    // Constructor
-    public MealAdapter(List<MealItem> mealItems) {
+    // Interface for click events
+    public interface OnMealClickListener {
+        void onMealClick(MealItem mealItem);
+    }
+
+    // Constructor with listener
+    public MealAdapter(List<MealItem> mealItems, OnMealClickListener listener) {
         this.mealItems = mealItems;
+        this.listener = listener;
     }
 
     @NonNull
@@ -30,11 +36,8 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
     @Override
     public void onBindViewHolder(@NonNull MealViewHolder holder, int position) {
         MealItem currentItem = mealItems.get(position);
-        holder.mealImageView.setImageResource(currentItem.getImageResourceId());
-        holder.mealNameTextView.setText(currentItem.getMealName());
-        holder.calorieTextView.setText(currentItem.getCalorieCount() + " Calories");
+        holder.bind(currentItem, listener);
     }
-
     @Override
     public int getItemCount() {
         return mealItems.size();
@@ -50,6 +53,21 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
             mealImageView = itemView.findViewById(R.id.mealImageView);
             mealNameTextView = itemView.findViewById(R.id.mealNameTextView);
             calorieTextView = itemView.findViewById(R.id.calorieTextView);
+        }
+
+        public void bind(final MealItem mealItem, final OnMealClickListener listener) {
+            mealImageView.setImageResource(mealItem.getImageResourceId());
+            mealNameTextView.setText(mealItem.getMealName());
+            calorieTextView.setText(mealItem.getCalorieCount() + " Calories");
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        listener.onMealClick(mealItem);
+                    }
+                }
+            });
         }
     }
 }
