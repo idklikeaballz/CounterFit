@@ -154,30 +154,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         if (currentUserEmail != null) {
             SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
-
             if (userDetails != null) {
                 baseBMR = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
                 baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, userDetails.weightGoal);
-
-                // Rounding to the nearest whole number
-                caloriesRemaining = (int) Math.round(baseBMR); // Initialize caloriesRemaining
-                updateSliderProgress(caloriesRemaining);
-
-
-                slider.setMax(caloriesRemaining);
-                slider.setProgress(0);
-                slider.setFocusable(false);
-                slider.setClickable(false);
-                slider.setEnabled(false);
-                textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
-
-                // Set the current user email to the emailTextView in the NavigationView header
                 View headerView = navigationView.getHeaderView(0);
                 TextView emailTextView = headerView.findViewById(R.id.emailTextView);
                 emailTextView.setText(currentUserEmail);
+
             } else {
-                textRemainingCalories.setText("User details not found");
-                slider.setProgress(0);
+                Log.d("Main", "User details not found.");
             }
         } else {
             Log.d("Main", "No current user email found.");
@@ -194,19 +179,20 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private void checkAndResetCaloriesDaily() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String lastResetDate = prefs.getString("LastResetDate", "");
-
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
         if (!currentDate.equals(lastResetDate)) {
-            retrieveAndDisplayUserBMR(); // Reset caloriesRemaining
+            retrieveAndDisplayUserBMR();
+            caloriesRemaining = (int) Math.round(baseBMR); // Reset caloriesRemaining
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("LastResetDate", currentDate);
+            editor.putInt("CaloriesRemaining", caloriesRemaining);
             editor.apply();
+        } else {
+            caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
         }
+        updateSliderProgress(caloriesRemaining);
     }
-
-
-
-
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
             case "Gain 0.2 kg per week": return bmr + 200;
@@ -365,6 +351,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     @Override
     protected void onPause() {
         super.onPause();
+        // Save the current value of caloriesRemaining when the app is paused
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("CaloriesRemaining", caloriesRemaining);
+        editor.apply();
+
         if (stepCounterSensor != null) {
             sensorManager.unregisterListener(stepListener);
         }
