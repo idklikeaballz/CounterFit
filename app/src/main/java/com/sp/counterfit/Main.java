@@ -188,9 +188,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         SignUpHelper dbHelper = new SignUpHelper(this);
         String currentUserEmail = dbHelper.getCurrentUserEmail();
         if (currentUserEmail != null) {
-            int maxCalories = dbHelper.getCaloriesRemaining(currentUserEmail);
-            Log.d("Main", "Max Calories: " + maxCalories); // Debug log
-            slider.setMax(maxCalories);
+            dbHelper.updateCaloriesRemaining(currentUserEmail, caloriesRemaining);
         }
     }
 
@@ -222,7 +220,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         slider.setEnabled(false);
 
         if (calories >= 0) {
-
+            slider.setProgress(0);
             slider.setProgress(slider.getMax() - calories); // Display remaining calories
             textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
         } else {
@@ -481,7 +479,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         }
     }
-
 
 
 }
