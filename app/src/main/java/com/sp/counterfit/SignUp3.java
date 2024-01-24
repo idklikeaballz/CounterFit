@@ -47,6 +47,7 @@ public class SignUp3 extends AppCompatActivity {
                 attemptSignUp();
             }
         });
+
     }
 
     private void attemptSignUp() {
@@ -74,14 +75,33 @@ public class SignUp3 extends AppCompatActivity {
         // Hash the password
         String hashedPassword = hashPassword(password);
 
-        // Save user data to the database
         dbHelper.insertUserDetails(gender, age, weight, height, email, hashedPassword, weightGoal);
+
+        // Calculate and set the initial remaining calories for the new user
+        double initialBMR = calculateBMR(gender, age, weight, height);
+        int initialCalories = (int) Math.round(initialBMR);
+        updateUserRemainingCalories(email, initialCalories);
 
         // Show a success message or navigate to the next screen
         Toast.makeText(this, "Sign Up Successful", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(SignUp3.this, Login.class);
         startActivity(intent);
     }
+    private double calculateBMR(String gender, int age, double weight, double height) {
+        if ("Male".equalsIgnoreCase(gender)) {
+            return 10 * weight + 6.25 * height * 100 - 5 * age + 5 + 500;
+        } else {
+            return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
+        }
+    }
+    private void updateUserRemainingCalories(String userEmail, int remainingCalories) {
+        // Update user's remaining calories in the database
+        // Use your database helper class (dbHelper) to update the user's remaining calories in the database
+        dbHelper.updateUserRemainingCalories(userEmail, remainingCalories);
+    }
+
+
+
 
 
     private boolean validateInputs(String email, String password, String confirmPassword) {

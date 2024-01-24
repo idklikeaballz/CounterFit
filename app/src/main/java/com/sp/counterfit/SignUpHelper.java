@@ -14,18 +14,18 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TIP_ID = "id";
     private static final String COLUMN_TIP_TEXT = "text";
 
-
     private static final String DATABASE_NAME = "UserDatabase";
     private static final int DATABASE_VERSION = 5;
-    private static final String TABLE_NAME = "UserDetails";
+    public static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
     private static final String COLUMN_AGE = "age";
     private static final String COLUMN_WEIGHT = "weight";
     private static final String COLUMN_HEIGHT = "height";
-    private static final String COLUMN_EMAIL = "email";
+    public static final String COLUMN_EMAIL = "email";
     private static final String COLUMN_PASSWORD = "password";
     private static final String COLUMN_WEIGHT_GOAL = "weightGoal";
+    public static final String COLUMN_CALORIES_REMAINING = "caloriesRemaining"; // Define this column
     private static final String SESSION_TABLE_NAME = "CurrentSession";
     private static final String SESSION_COLUMN_USER_ID = "userId";
     private static final String CREATE_TIPS_TABLE = "CREATE TABLE " + TIPS_TABLE_NAME + "("
@@ -44,8 +44,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
             + COLUMN_HEIGHT + " REAL,"
             + COLUMN_EMAIL + " TEXT UNIQUE,"
             + COLUMN_PASSWORD + " TEXT,"
-            + COLUMN_WEIGHT_GOAL + " TEXT" // Added column for weight goal
+            + COLUMN_WEIGHT_GOAL + " TEXT," // Added column for weight goal
+            + COLUMN_CALORIES_REMAINING + " INTEGER" // Added column for calories remaining
             + ")";
+
 
     public SignUpHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -115,7 +117,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         UserDetails userDetails = null;
 
-        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_EMAIL, COLUMN_WEIGHT_GOAL},
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_EMAIL, COLUMN_WEIGHT_GOAL, COLUMN_CALORIES_REMAINING},
                 COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -126,7 +128,8 @@ public class SignUpHelper extends SQLiteOpenHelper {
                     cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT)),
                     cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_HEIGHT)),
                     cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)),
-                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)) // Retrieve the weight goal
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CALORIES_REMAINING)) // Retrieve calories remaining
             );
             cursor.close();
         }
@@ -134,6 +137,15 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return userDetails;
     }
+
+    public double calculateBMR(String gender, int age, double weight, double height) {
+        if ("Male".equalsIgnoreCase(gender)) {
+            return 10 * weight + 6.25 * height * 100 - 5 * age + 5 + 500;
+        } else {
+            return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
+        }
+    }
+
     public User getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -162,6 +174,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
     }
 
     // Class to hold user details
+    // Class to hold user details
     public static class UserDetails implements Serializable {
         public int userId;
         public String gender;
@@ -170,8 +183,9 @@ public class SignUpHelper extends SQLiteOpenHelper {
         public double height;
         public String email;
         public String weightGoal;
+        public int caloriesRemaining; // Add this field
 
-        public UserDetails(int userId, String gender, int age, double weight, double height, String email, String weightGoal) {
+        public UserDetails(int userId, String gender, int age, double weight, double height, String email, String weightGoal, int caloriesRemaining) {
             this.userId = userId;
             this.gender = gender;
             this.age = age;
@@ -179,9 +193,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
             this.height = height;
             this.email = email;
             this.weightGoal = weightGoal;
+            this.caloriesRemaining = caloriesRemaining; // Initialize caloriesRemaining
         }
-
     }
+
 
 
     public void setCurrentSession(int userId) {
@@ -226,18 +241,19 @@ public class SignUpHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         UserDetails userDetails = null;
 
-        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_EMAIL, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_WEIGHT_GOAL},
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_ID, COLUMN_GENDER, COLUMN_AGE, COLUMN_WEIGHT, COLUMN_HEIGHT, COLUMN_EMAIL, COLUMN_WEIGHT_GOAL, COLUMN_CALORIES_REMAINING},
                 COLUMN_ID + "=?", new String[]{String.valueOf(userId)}, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
             userDetails = new UserDetails(
-                    userId,
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENDER)),
                     cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)),
                     cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT)),
                     cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_HEIGHT)),
                     cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)),
-                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)) // Retrieve the weight goal
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT_GOAL)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CALORIES_REMAINING))
             );
             cursor.close();
         }
@@ -245,6 +261,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return userDetails;
     }
+
     public String getRandomTip() {
         SQLiteDatabase db = this.getReadableDatabase();
         String tip = null;
@@ -282,6 +299,68 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.delete(SESSION_TABLE_NAME, null, null);
         db.close();
     }
+    public double calculateBMRForCurrentUser() {
+        String currentUserEmail = getCurrentUserEmail();
+        if (currentUserEmail != null) {
+            UserDetails userDetails = getUserDetailsByEmail(currentUserEmail);
+            if (userDetails != null) {
+                return calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+            }
+        }
+        return 0;
+    }
+
+    public String getWeightGoalForCurrentUser() {
+        String currentUserEmail = getCurrentUserEmail();
+        if (currentUserEmail != null) {
+            UserDetails userDetails = getUserDetailsByEmail(currentUserEmail);
+            if (userDetails != null) {
+                return userDetails.weightGoal;
+            }
+        }
+        return "";
+    }
+
+    public void updateCaloriesRemaining(String email, int caloriesRemaining) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CALORIES_REMAINING, caloriesRemaining);
+
+        int rowsUpdated = db.update(TABLE_NAME, values, COLUMN_EMAIL + " = ?", new String[]{email});
+        db.close();
+
+        if (rowsUpdated == 1) {
+            Log.d("SignUpHelper", "Calories remaining updated successfully.");
+        } else {
+            Log.e("SignUpHelper", "Failed to update calories remaining.");
+        }
+    }
+    public void updateUserRemainingCalories(String userEmail, int remainingCalories) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CALORIES_REMAINING, remainingCalories);
+
+        // Update the user's remaining calories in the database
+        db.update(TABLE_NAME, values, COLUMN_EMAIL + " = ?", new String[]{userEmail});
+        db.close();
+    }
+    public int getCaloriesRemaining(String userEmail) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int caloriesRemaining = 0;
+
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_CALORIES_REMAINING},
+                COLUMN_EMAIL + "=?", new String[]{userEmail}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            caloriesRemaining = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CALORIES_REMAINING));
+            cursor.close();
+        }
+
+        db.close();
+        return caloriesRemaining;
+    }
+
+
 
 }
 

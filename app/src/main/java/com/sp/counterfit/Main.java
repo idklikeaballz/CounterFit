@@ -1,4 +1,9 @@
+
 package com.sp.counterfit;
+
+import static com.sp.counterfit.SignUpHelper.COLUMN_CALORIES_REMAINING;
+import static com.sp.counterfit.SignUpHelper.COLUMN_EMAIL;
+import static com.sp.counterfit.SignUpHelper.TABLE_NAME;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -12,6 +17,8 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -66,6 +73,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         setupStepCounter();
         retrieveAndDisplayUserBMR();
         checkAndResetCaloriesDaily();
+        calculateAndSetCaloriesForNewUser();
 
 
 
@@ -123,6 +131,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         textTipOfTheDay = findViewById(R.id.tipTextView);
         closeTipButton = findViewById(R.id.closeTipButton);
         tipContainer = findViewById(R.id.tipbg);
+
+
         ImageView recoAddImageView = findViewById(R.id.reco_add);
 
         View headerView = navigationView.getHeaderView(0);
@@ -153,6 +163,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             // Handle the case where the ImageView is not found
             Log.e("Main", "Profile icon not found");
         }
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String currentUserEmail = dbHelper.getCurrentUserEmail();
+
+        if (currentUserEmail != null) {
+            int maxCalories = dbHelper.getCaloriesRemaining(currentUserEmail);
+
+            // Update the maximum value of the SeekBar with the user's calories
+            slider.setMax(maxCalories);
+        }
 
 
         setupBottomNavigationView();
@@ -160,7 +179,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private void updateRemainingCalories(int addedCalories) {
         caloriesRemaining -= addedCalories; // Subtract added calories
         updateSliderProgress(caloriesRemaining);
+
+        // Save the updated calories remaining in the database
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String currentUserEmail = dbHelper.getCurrentUserEmail();
+        if (currentUserEmail != null) {
+            dbHelper.updateCaloriesRemaining(currentUserEmail, caloriesRemaining);
+        }
     }
+
 
 
     private void retrieveAndDisplayUserBMR() {
@@ -168,46 +195,92 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         String currentUserEmail = dbHelper.getCurrentUserEmail();
 
         if (currentUserEmail != null) {
-            SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
-            if (userDetails != null) {
-                baseBMR = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
-                baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, userDetails.weightGoal);
-                View headerView = navigationView.getHeaderView(0);
-                TextView emailTextView = headerView.findViewById(R.id.emailTextView);
-                emailTextView.setText(currentUserEmail);
+            baseBMR = dbHelper.calculateBMRForCurrentUser();
+            baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
 
-            } else {
-                Log.d("Main", "User details not found.");
-            }
+            // Use the getCaloriesRemaining method to retrieve calories remaining for the current user
+            caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
+
+            View headerView = navigationView.getHeaderView(0);
+            TextView emailTextView = headerView.findViewById(R.id.emailTextView);
+            emailTextView.setText(currentUserEmail);
+
+            updateSliderProgress(caloriesRemaining);
         } else {
             Log.d("Main", "No current user email found.");
         }
     }
+
+
     private void updateSliderProgress(int calories) {
-        slider.setProgress(slider.getMax() - calories); // Update slider based on calories remaining
-        if (calories>=0)
-        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
-        else {
+        slider.setEnabled(false);
+
+        if (calories >= 0) {
+            slider.setProgress(0);
+            slider.setProgress(slider.getMax() - calories); // Display remaining calories
+            textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
+        } else {
+            slider.setProgress(slider.getMax()); // Display as full if over the goal
             textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Over", Math.abs(calories)));
         }
     }
-    private void checkAndResetCaloriesDaily() {
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        String lastResetDate = prefs.getString("LastResetDate", "");
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        if (!currentDate.equals(lastResetDate)) {
-            retrieveAndDisplayUserBMR();
-            caloriesRemaining = (int) Math.round(baseBMR); // Reset caloriesRemaining
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("LastResetDate", currentDate);
-            editor.putInt("CaloriesRemaining", caloriesRemaining);
-            editor.apply();
-        } else {
-            caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
+    private void checkAndResetCaloriesDaily() {
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String currentUserEmail = dbHelper.getCurrentUserEmail();
+
+        if (currentUserEmail != null) {
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            String lastResetDate = prefs.getString("LastResetDate", "");
+            String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+            if (!currentDate.equals(lastResetDate)) {
+                baseBMR = dbHelper.calculateBMRForCurrentUser(); // Retrieve and calculate BMR for the current user
+                baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
+                caloriesRemaining = (int) Math.round(baseBMR); // Reset caloriesRemaining
+
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("LastResetDate", currentDate);
+                editor.putInt("CaloriesRemaining", caloriesRemaining);
+                editor.apply();
+            } else {
+                caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
+            }
+            updateSliderProgress(caloriesRemaining);
         }
-        updateSliderProgress(caloriesRemaining);
     }
+    private void calculateAndSetCaloriesForNewUser() {
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String currentUserEmail = dbHelper.getCurrentUserEmail();
+
+        if (currentUserEmail != null) {
+            baseBMR = dbHelper.calculateBMRForCurrentUser();
+            baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
+
+            // Check if calories_remaining is null in the database
+            Integer caloriesRemainingFromDB = dbHelper.getCaloriesRemaining(currentUserEmail);
+
+            if (caloriesRemainingFromDB == null) {
+                // Set a default value for caloriesRemaining for new users
+                caloriesRemaining = (int) Math.round(baseBMR);
+                dbHelper.updateCaloriesRemaining(currentUserEmail, caloriesRemaining);
+            } else {
+                // Use the value from the database for previously logged-in users
+                caloriesRemaining = caloriesRemainingFromDB;
+            }
+
+            // Save the calculated or retrieved caloriesRemaining in shared preferences
+            SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            appPrefs.edit().putInt("CaloriesRemaining", caloriesRemaining).apply();
+
+            // Update UI
+            updateSliderProgress(caloriesRemaining);
+        } else {
+            Log.d("Main", "No current user email found.");
+        }
+    }
+
+
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
             case "Gain 0.2 kg per week": return bmr + 200;
@@ -219,13 +292,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
 
-    private double calculateBMR(String gender, int age, double weight, double height) {
-        if ("Male".equalsIgnoreCase(gender)) {
-            return 10 * weight + 6.25 * height * 100 - 5 * age + 5+500;
-        } else {
-            return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
-        }
-    }
+
 
 
     @Override
@@ -276,11 +343,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         editor.clear();
         editor.apply();
 
+        // Reset caloriesRemaining to a default value or clear it
+        caloriesRemaining = 0;
+        updateSliderProgress(caloriesRemaining);
+
         // Redirect to the Login Activity
         Intent intent = new Intent(this, Home.class); // Replace with actual login activity class
         startActivity(intent);
         finish();
     }
+
 
     @Override
     public void onBackPressed() {
@@ -312,6 +384,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             editor.apply();
         }
     }
+
+
     private void saveTipVisibilityState(boolean isVisible) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -380,6 +454,3 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }
 
 }
-
-
-
