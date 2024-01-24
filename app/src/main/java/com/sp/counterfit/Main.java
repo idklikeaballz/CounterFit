@@ -24,6 +24,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -74,6 +76,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         retrieveAndDisplayUserBMR();
         checkAndResetCaloriesDaily();
         calculateAndSetCaloriesForNewUser();
+        loadProfileImage();
+
 
 
 
@@ -184,7 +188,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         SignUpHelper dbHelper = new SignUpHelper(this);
         String currentUserEmail = dbHelper.getCurrentUserEmail();
         if (currentUserEmail != null) {
-            dbHelper.updateCaloriesRemaining(currentUserEmail, caloriesRemaining);
+            int maxCalories = dbHelper.getCaloriesRemaining(currentUserEmail);
+            Log.d("Main", "Max Calories: " + maxCalories); // Debug log
+            slider.setMax(maxCalories);
         }
     }
 
@@ -216,7 +222,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         slider.setEnabled(false);
 
         if (calories >= 0) {
-            slider.setProgress(0);
+
             slider.setProgress(slider.getMax() - calories); // Display remaining calories
             textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", calories));
         } else {
@@ -434,6 +440,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     @Override
     protected void onResume() {
         super.onResume();
+        loadProfileImage();
         if (stepCounterSensor != null) {
             sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
         }
@@ -452,5 +459,29 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             sensorManager.unregisterListener(stepListener);
         }
     }
+    private void loadProfileImage() {
+        SignUpHelper dbHelper = new SignUpHelper(this);
+        String currentUserEmail = dbHelper.getCurrentUserEmail();
+        if (currentUserEmail != null) {
+            String imageUriString = dbHelper.getProfileImageUri(currentUserEmail);
+            View headerView = navigationView.getHeaderView(0);
+            ImageView profileIcon = headerView.findViewById(R.id.profileIcon);
+
+            if (profileIcon != null) {
+                if (imageUriString != null && !imageUriString.isEmpty()) {
+                    Uri imageUri = Uri.parse(imageUriString);
+
+                    Glide.with(this)
+                            .load(imageUri)
+                            .circleCrop() // Apply circle crop transformation
+                            .into(profileIcon);
+                } else {
+
+                }
+            }
+        }
+    }
+
+
 
 }

@@ -13,6 +13,8 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String TIPS_TABLE_NAME = "Tips";
     private static final String COLUMN_TIP_ID = "id";
     private static final String COLUMN_TIP_TEXT = "text";
+    private static final String COLUMN_PROFILE_IMAGE_URI = "profileImageUri"; // New column for image URI
+
 
     private static final String DATABASE_NAME = "UserDatabase";
     private static final int DATABASE_VERSION = 5;
@@ -36,6 +38,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String CREATE_SESSION_TABLE = "CREATE TABLE " + SESSION_TABLE_NAME + "("
             + SESSION_COLUMN_USER_ID + " INTEGER PRIMARY KEY)";
 
+
     private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
             + COLUMN_GENDER + " TEXT,"
@@ -45,8 +48,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
             + COLUMN_EMAIL + " TEXT UNIQUE,"
             + COLUMN_PASSWORD + " TEXT,"
             + COLUMN_WEIGHT_GOAL + " TEXT," // Added column for weight goal
-            + COLUMN_CALORIES_REMAINING + " INTEGER" // Added column for calories remaining
+            + COLUMN_CALORIES_REMAINING + " INTEGER," // Added column for calories remaining
+            + COLUMN_PROFILE_IMAGE_URI + " TEXT" // New column for profile image URI
             + ")";
+
 
 
     public SignUpHelper(Context context) {
@@ -359,6 +364,57 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return caloriesRemaining;
     }
+    public void updateUserEmail(String newEmail) {
+        int userId = getCurrentUserId();
+        if (userId != -1) {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_EMAIL, newEmail);
+
+            int rowsAffected = db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(userId)});
+            db.close();
+
+            Log.d("SignUpHelper", "Rows affected: " + rowsAffected);
+        } else {
+            Log.d("SignUpHelper", "No user ID found for email update");
+        }
+    }
+
+
+    public void updateProfileImageUri(String userEmail, String imageUri) {
+        SQLiteDatabase db = null;
+        try {
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_PROFILE_IMAGE_URI, imageUri);
+
+            db.update(TABLE_NAME, values, COLUMN_EMAIL + " = ?", new String[]{userEmail});
+        } catch (Exception e) {
+            Log.e("SignUpHelper", "Error updating profile image URI", e);
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+    }
+
+
+    public String getProfileImageUri(String userEmail) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String imageUri = null;
+
+        Cursor cursor = db.query(TABLE_NAME, new String[]{COLUMN_PROFILE_IMAGE_URI},
+                COLUMN_EMAIL + "=?", new String[]{userEmail}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PROFILE_IMAGE_URI));
+            cursor.close();
+        }
+
+        db.close();
+        return imageUri;
+    }
+
 
 
 

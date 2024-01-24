@@ -15,17 +15,16 @@
         android:layout_marginStart="0dp">
 
         <!-- Profile Icon -->
-        <!-- Replace with your profile icon drawable -->
-
-        <!-- Email TextView -->
         <ImageView
             android:id="@+id/profileIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="9dp"
             android:src="@drawable/profile_user" />
 
+
+        <!-- Email TextView -->
         <TextView
             android:id="@+id/emailTextView"
             android:layout_width="wrap_content"
@@ -35,7 +34,9 @@
             android:layout_marginTop="8dp"
             android:fontFamily="@font/inter_medium"
             android:text=""
-           />
+            android:textColor="@android:color/black"
+             android:textSize="14sp"
+        />
 
     </RelativeLayout>
 
