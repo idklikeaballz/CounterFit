@@ -306,6 +306,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Log.d("NavigationView","About clicked");
             Intent intent = new Intent(Main.this, About.class);
             startActivity(intent);
+        } else if (id==R.id.nav_gyms) {
+            Intent intent= new Intent(Main.this,Gym.class);
+            startActivity(intent);
+
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -324,6 +328,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 } else if (id==R.id.bot_food) {
                     Intent intent = new Intent(Main.this, Home.class);
                     startActivity(intent);
+                } else if (id==R.id.bot_gym) {
+                    Intent intent = new Intent(Main.this, Gym.class);
+                    startActivity(intent);
+
                 }
                 return false;
             }
