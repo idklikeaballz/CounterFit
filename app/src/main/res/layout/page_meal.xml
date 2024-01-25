@@ -1,33 +1,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:background="#142C59"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#141E30" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Name:"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp" />
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        app:boxStrokeColor="#142C59"
+        app:boxStrokeWidth="2dp"
+        app:boxBackgroundColor="@android:color/transparent"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        app:hintEnabled="true"
+        app:hintAnimationEnabled="true"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/EditText"
+            android:layout_width="match_parent"
+            android:layout_height="47dp"
+            android:inputType="text"
+            android:padding="8dp"
+            android:textColor="#A2D9FF"
+            android:textColorHint="#858C94" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
         android:id="@+id/mealImageView"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:scaleType="centerCrop"
         android:background="@drawable/rounded_corners"
-        android:padding="2dp" />
-    <TextView
-    android:id="@+id/mealNameTextView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:textSize="10sp"
-    android:fontFamily="@font/questrial"
-    android:text="testing"
-    android:textColor="#000000" />
-
-    <TextView
-        android:id="@+id/calorieTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:fontFamily="@font/questrial"
-        android:text="nig"
-        android:textColor="#FF6969"
-        android:textSize="10sp" />
-    </LinearLayout>
+        android:padding="2dp"
+        android:scaleType="centerCrop" />
+</LinearLayout>
