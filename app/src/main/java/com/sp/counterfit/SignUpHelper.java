@@ -17,7 +17,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     public static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
@@ -69,9 +69,11 @@ public class SignUpHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
-        if (oldVersion < 4) {
+        if (oldVersion < 6) {
             // Only create the CurrentSession table if it doesn't exist
+            db.execSQL(CREATE_TABLE);
             db.execSQL(CREATE_SESSION_TABLE);
+            db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
 
         }
         // Add more conditions here for other database upgrades

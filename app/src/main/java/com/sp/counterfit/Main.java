@@ -1,10 +1,6 @@
 
 package com.sp.counterfit;
 
-import static com.sp.counterfit.SignUpHelper.COLUMN_CALORIES_REMAINING;
-import static com.sp.counterfit.SignUpHelper.COLUMN_EMAIL;
-import static com.sp.counterfit.SignUpHelper.TABLE_NAME;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -17,8 +13,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -128,7 +122,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_topview);
         NavigationView botNavigationView = findViewById(R.id.nav_bottomview);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView = findViewById(R.id.bottom_navigation_about);
         textRemainingCalories = findViewById(R.id.textRemainingCalories);
         stepsTextView = findViewById(R.id.stepsTextView);
         slider = findViewById(R.id.seekBarCalories);
@@ -307,17 +301,19 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Log.d("NavigationView", "Logout clicked");
             logoutUser();
         } else if (id == R.id.nav_home) {
-            Intent intent = new Intent(this, Main.class);
+
+        } else if (id == R.id.nav_about) {
+            Log.d("NavigationView","About clicked");
+            Intent intent = new Intent(Main.this, About.class);
             startActivity(intent);
         }
 
-        item.setChecked(true);
         drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
+        return true; // Indicate that the item click has been handled
     }
 
     private void setupBottomNavigationView() {
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView = findViewById(R.id.bottom_navigation_about);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
