@@ -1,0 +1,58 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#142C59">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Adjusted ImageView size and layout properties to make the logo smaller and centered -->
+
+        <!-- TextView for the greeting placed below the ImageView -->
+        <ImageView
+            android:id="@+id/imageViewLogo"
+            android:layout_width="460dp"
+            android:layout_height="339dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/logoimg" />
+
+        <!-- TextView for the description placed below the greeting TextView -->
+        <TextView
+            android:id="@+id/tvGreeting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-40dp"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Hey there! I'm Shaun \nworking with Austin\npresenting you CounterFit."
+            android:fontFamily="@font/inter_bold"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:padding="16dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Counterfit is a comprehensive fitness and calorie-tracking app designed to help users achieve their health and wellness goals. The app offers a user-friendly interface and a range of features to support individuals in managing their fitness journey effectively."
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_about"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1E1E1E"
+        android:layout_alignParentBottom="true"
+        app:itemIconTint="@color/bottom_nav_colors"
+        app:itemTextColor="@color/bottom_nav_colors"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
+</RelativeLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Define the solid background color -->
+    <solid android:color="#FFFFFF"/> <!-- Replace with the desired background color -->
+
+    <!-- Define the border properties -->
+    <stroke android:width="1dp" android:color="#858C94"/> <!-- Replace with the desired border color -->
+
+    <!-- Define the corner radius -->
+    <corners android:radius="10dp"/> <!-- Adjust the radius to match your design -->
+</shape>

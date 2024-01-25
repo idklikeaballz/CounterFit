@@ -14,13 +14,14 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
-        android:text="Counterfit"
-        android:textColor="#FFFFFF"
-        android:textSize="48sp"
+        android:fontFamily="@font/inter_bold"
         android:shadowColor="#66000000"
         android:shadowDx="2"
         android:shadowDy="2"
         android:shadowRadius="4"
+        android:text="Counterfit"
+        android:textColor="#FFFFFF"
+        android:textSize="48sp"
         android:textStyle="bold" />
 
 
@@ -45,6 +46,7 @@
         android:layout_marginTop="13dp"
         android:layout_marginEnd="50dp"
         android:background="@drawable/button_background"
+        android:fontFamily="@font/inter"
         android:text="Sign Up"
         android:textColor="#18A0FB" />
 
@@ -57,6 +59,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="50dp"
         android:background="@drawable/button_background"
+        android:fontFamily="@font/inter"
         android:text="Login"
         android:textColor="#18A0FB" />
 

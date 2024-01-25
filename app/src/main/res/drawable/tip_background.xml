@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Main background rectangle with transparent background and colored border -->
+    <item>
+        <shape android:shape="rectangle">
+            <!-- Transparent background -->
+            <solid android:color="@android:color/transparent"/>
+            <!-- Colored border -->
+            <stroke
+                android:width="2dp"
+                android:color="#858C94" />
+            <!-- Define padding to prevent content from overlapping the border -->
+            <padding
+                android:bottom="6dp"
+                android:left="6dp"
+                android:right="6dp"
+                android:top="6dp" />
+            <!-- Corner radius for rounded corners -->
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
+
+
+</layer-list>
