@@ -2,9 +2,7 @@ package com.sp.counterfit;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,14 +14,12 @@ import android.widget.Toast;
 public class SignUp1 extends AppCompatActivity {
 
     private RadioGroup genderGroup;
-    private SignUpHelper dbHelper;
     private EditText ageEdit, weightEdit, heightEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up1);
-        dbHelper = new SignUpHelper(this);
 
         // Initialize your UI components
         genderGroup = findViewById(R.id.genderGroup);
@@ -35,15 +31,14 @@ public class SignUp1 extends AppCompatActivity {
         nextButton1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveUserData();
-                // Intent to start the next activity
-                Intent intent = new Intent(SignUp1.this, SignUp2.class);
-                startActivity(intent);
+                if (validateAndSaveUserData()) {
+                    // The data is now being validated and sent within the validateAndSaveUserData() method
+                }
             }
         });
     }
 
-    private void saveUserData() {
+    private boolean validateAndSaveUserData() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
         String age = ageEdit.getText().toString();
         String weight = weightEdit.getText().toString();
@@ -51,15 +46,30 @@ public class SignUp1 extends AppCompatActivity {
 
         if (selectedId == -1 || age.isEmpty() || weight.isEmpty() || height.isEmpty()) {
             Toast.makeText(SignUp1.this, "Please fill all the fields", Toast.LENGTH_SHORT).show();
+            return false;
         } else {
             RadioButton selectedGender = findViewById(selectedId);
-            String gender = selectedGender.getText().toString(); // Ensure 'gender' is declared here
+            String gender = selectedGender.getText().toString();
 
-            dbHelper.insertPersonalDetails(gender, Integer.parseInt(age), Double.parseDouble(weight), Double.parseDouble(height));
             Intent intent = new Intent(SignUp1.this, SignUp2.class);
-            startActivity(intent);
+            // Convert and add the extras before starting the activity
+            try {
+                int ageInt = Integer.parseInt(age);
+                double weightDouble = Double.parseDouble(weight);
+                double heightDouble = Double.parseDouble(height);
+
+                intent.putExtra("gender", gender);
+                intent.putExtra("age", ageInt);
+                intent.putExtra("weight", weightDouble);
+                intent.putExtra("height", heightDouble);
+
+                startActivity(intent);
+                return true;
+            } catch (NumberFormatException e) {
+                // Handle the exception if the parsing fails
+                Toast.makeText(SignUp1.this, "Please enter valid numbers for age, weight, and height", Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
     }
-
-
 }

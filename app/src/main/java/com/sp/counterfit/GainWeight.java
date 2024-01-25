@@ -28,36 +28,36 @@ public class GainWeight extends AppCompatActivity {
         }
 
         // Initialize RadioGroup and Button
-        goalRadioGroup = findViewById(R.id.goalRadioGroup2);
+        goalRadioGroup = findViewById(R.id.gainweightRadioGroup);
         Button nextButton = findViewById(R.id.buttonNext1);
+
+        // Receive data from SignUp2
+        Intent receivedIntent = getIntent();
+        String gender = receivedIntent.getStringExtra("gender");
+        int age = receivedIntent.getIntExtra("age", 0);
+        double weight = receivedIntent.getDoubleExtra("weight", 0.0);
+        double height = receivedIntent.getDoubleExtra("height", 0.0);
 
         // Set the button click listener
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveWeightGoal();
+                int selectedId = goalRadioGroup.getCheckedRadioButtonId();
+                if (selectedId != -1) {
+                    RadioButton selectedGoal = findViewById(selectedId);
+                    String weightGoal = selectedGoal.getText().toString();
+
+                    Intent intent = new Intent(GainWeight.this, SignUp3.class);
+                    intent.putExtra("gender", gender);
+                    intent.putExtra("age", age);
+                    intent.putExtra("weight", weight);
+                    intent.putExtra("height", height);
+                    intent.putExtra("weightGoal", weightGoal );
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(GainWeight.this, "Please select a weight goal", Toast.LENGTH_SHORT).show();
+                }
             }
         });
-    }
-
-    private void saveWeightGoal() {
-        // Get the selected RadioButton ID from the RadioGroup
-        int selectedGoalId = goalRadioGroup.getCheckedRadioButtonId();
-        if (selectedGoalId != -1) { // Check if any RadioButton is selected
-            RadioButton selectedGoalButton = findViewById(selectedGoalId);
-            String weightGoal = selectedGoalButton.getText().toString();
-            // Insert or update the weight goal in the database
-            SignUpHelper dbHelper = new SignUpHelper(this);
-            int userId = getIntent().getIntExtra("UserId", -1);
-            dbHelper.insertOrUpdateGoal(userId, weightGoal);
-
-            // Optionally, provide feedback to the user
-            Toast.makeText(this, "Weight goal saved!", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(GainWeight.this, SignUp3.class);
-            startActivity(intent);
-        } else {
-            // Notify the user to make a selection
-            Toast.makeText(this, "Please select a weight goal", Toast.LENGTH_SHORT).show();
-        }
     }
 }

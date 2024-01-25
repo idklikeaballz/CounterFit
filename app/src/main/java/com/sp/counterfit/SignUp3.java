@@ -20,7 +20,6 @@ public class SignUp3 extends AppCompatActivity {
     private TextInputEditText emailEditText, passwordEditText, confirmPasswordEditText;
     private SignUpHelper dbHelper;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +47,7 @@ public class SignUp3 extends AppCompatActivity {
                 attemptSignUp();
             }
         });
+
     }
 
     private void attemptSignUp() {
@@ -55,27 +55,53 @@ public class SignUp3 extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
         String confirmPassword = confirmPasswordEditText.getText().toString();
 
+        // Receive data from previous activity
+        Intent receivedIntent = getIntent();
+        String gender = receivedIntent.getStringExtra("gender");
+        int age = receivedIntent.getIntExtra("age", 0);
+        double weight = receivedIntent.getDoubleExtra("weight", 0.0);
+        double height = receivedIntent.getDoubleExtra("height", 0.0);
+        String weightGoal = receivedIntent.getStringExtra("weightGoal");
+
         if (!validateInputs(email, password, confirmPassword)) {
-            Toast.makeText(this,"Email has been used", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Check if the email already exists
         if (dbHelper.isEmailExists(email)) {
             emailEditText.setError("Email already in use");
             return;
         }
+
         // Hash the password
         String hashedPassword = hashPassword(password);
-        dbHelper.insertUserData(email, hashedPassword);
-        // Save the email and hashed password using SharedPreferences
-        saveTempUserData(email, hashedPassword);
+
+        dbHelper.insertUserDetails(gender, age, weight, height, email, hashedPassword, weightGoal);
+
+        // Calculate and set the initial remaining calories for the new user
+        double initialBMR = calculateBMR(gender, age, weight, height);
+        int initialCalories = (int) Math.round(initialBMR);
+        updateUserRemainingCalories(email, initialCalories);
+
         // Show a success message or navigate to the next screen
         Toast.makeText(this, "Sign Up Successful", Toast.LENGTH_SHORT).show();
-
         Intent intent = new Intent(SignUp3.this, Login.class);
         startActivity(intent);
     }
+    private double calculateBMR(String gender, int age, double weight, double height) {
+        if ("Male".equalsIgnoreCase(gender)) {
+            return 10 * weight + 6.25 * height * 100 - 5 * age + 5 + 500;
+        } else {
+            return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
+        }
+    }
+    private void updateUserRemainingCalories(String userEmail, int remainingCalories) {
+        // Update user's remaining calories in the database
+        // Use your database helper class (dbHelper) to update the user's remaining calories in the database
+        dbHelper.updateUserRemainingCalories(userEmail, remainingCalories);
+    }
+
+
+
 
 
     private boolean validateInputs(String email, String password, String confirmPassword) {
@@ -97,13 +123,7 @@ public class SignUp3 extends AppCompatActivity {
         return true;
     }
 
-    private void saveTempUserData(String email, String hashedPassword) {
-        SharedPreferences sharedPref = getSharedPreferences("UserSignUpData", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("Email", email);
-        editor.putString("HashedPassword", hashedPassword);
-        editor.apply();
-    }
+
 
     private String hashPassword(String password) {
         try {

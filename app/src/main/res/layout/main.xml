@@ -4,7 +4,8 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_card"
+    android:background="#BBF246"
+    android:foregroundGravity="center"
     tools:context=".Main">
 
     <!-- Main content area with Toolbar and ScrollView -->
@@ -72,8 +73,8 @@
                             android:layout_alignParentStart="true"
                             android:layout_alignParentTop="true"
                             android:layout_marginTop="-5dp"
-                            android:text="CALORIES"
                             android:fontFamily="@font/inter_semibold"
+                            android:text="CALORIES"
                             android:textColor="#013220" />
 
                         <SeekBar
@@ -99,15 +100,143 @@
                             android:layout_marginEnd="10dp"
                             android:layout_marginBottom="0dp"
                             android:background="@drawable/circle"
+                            android:fontFamily="@font/inter_semibold"
                             android:gravity="center"
                             android:padding="5dp"
-                            android:fontFamily="@font/inter_semibold"
                             android:text="1533 Remaining"
                             android:textAppearance="?android:attr/textAppearanceMedium" />
                     </RelativeLayout>
                 </androidx.cardview.widget.CardView>
+
+                <RelativeLayout
+                    android:id="@+id/tipbg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/tip_background"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tipTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_toStartOf="@+id/closeTipButton"
+                        android:text="Tip of the day: Exercise regularly and you will see results!"
+                        android:textColor="#858C94" />
+
+                    <ImageButton
+                        android:id="@+id/closeTipButton"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/cross" />
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <!-- CardView for Recommendation -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="150dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="#BBF246"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#BBF246"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/recommendationLabel"
+                                android:layout_width="117dp"
+                                android:layout_height="26dp"
+                                android:layout_marginLeft="10dp"
+                                android:fontFamily="@font/inter_semibold"
+                                android:text="Recommend"
+                                android:textSize="13sp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.608"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <ImageView
+                                android:id="@+id/reco_add"
+                                android:layout_width="87dp"
+                                android:layout_height="81dp"
+                                android:src="@drawable/plus"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/recommendationLabel" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- CardView for Steps -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="1"
+                        android:background="#191D1A"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#1E1E1E"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/stepsLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_semibold"
+                                android:text="Steps"
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/stepsTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_semibold"
+                                android:text="0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="30sp"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/stepsLabel"
+                                app:layout_constraintVertical_bias="0.405" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
             </LinearLayout>
+
         </ScrollView>
+
 
         <!-- Bottom Navigation View -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
