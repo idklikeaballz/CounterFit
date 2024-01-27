@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -30,12 +31,9 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" />
+            android:value="AIzaSyCdLt_8yGJjmiUX69GK4dmpmzhUha3UQBU" />
 
-        <activity
-            android:name=".GymMaps"
-            android:exported="false"
-            android:label="@string/title_activity_gym_maps" />
+
         <activity
             android:name=".Gym"
             android:exported="false" />

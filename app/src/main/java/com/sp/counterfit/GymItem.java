@@ -1,5 +1,9 @@
 package com.sp.counterfit;
 
+import com.google.android.gms.maps.GoogleMap;
+
+import java.util.List;
+
 public class GymItem {
     private String name;
     private String address;
@@ -34,4 +38,8 @@ public class GymItem {
     public double getLongitude() {
         return longitude;
     }
+
 }
+
+
+

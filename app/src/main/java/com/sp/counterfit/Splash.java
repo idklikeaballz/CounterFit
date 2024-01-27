@@ -15,7 +15,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.airbnb.lottie.LottieAnimationView;
 
 public class Splash extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
