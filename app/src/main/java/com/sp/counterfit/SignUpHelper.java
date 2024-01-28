@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SignUpHelper extends SQLiteOpenHelper {
     private static final String TIPS_TABLE_NAME = "Tips";
@@ -17,7 +19,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     public static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
@@ -30,6 +32,13 @@ public class SignUpHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CALORIES_REMAINING = "caloriesRemaining"; // Define this column
     private static final String SESSION_TABLE_NAME = "CurrentSession";
     private static final String SESSION_COLUMN_USER_ID = "userId";
+    private static final String FOOD_TABLE_NAME = "FoodItems";
+    private static final String COLUMN_FOOD_ID = "id";
+    private static final String COLUMN_FOOD_NAME = "name";
+    private static final String COLUMN_FOOD_CALORIES = "calories";
+    private static final String COLUMN_FOOD_IMAGE_URI = "imageUri";
+    private static final String COLUMN_FOOD_USER_ID = "userId"; // New column for linking food to a user
+
     private static final String CREATE_TIPS_TABLE = "CREATE TABLE " + TIPS_TABLE_NAME + "("
             + COLUMN_TIP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
             + COLUMN_TIP_TEXT + " TEXT)";
@@ -51,6 +60,14 @@ public class SignUpHelper extends SQLiteOpenHelper {
             + COLUMN_CALORIES_REMAINING + " INTEGER," // Added column for calories remaining
             + COLUMN_PROFILE_IMAGE_URI + " TEXT" // New column for profile image URI
             + ")";
+    private static String CREATE_FOOD_TABLE = "CREATE TABLE " + FOOD_TABLE_NAME + "("
+            + COLUMN_FOOD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_FOOD_USER_ID + " INTEGER," // Link to user ID
+            + COLUMN_FOOD_NAME + " TEXT,"
+            + COLUMN_FOOD_CALORIES + " INTEGER,"
+            + COLUMN_FOOD_IMAGE_URI + " TEXT,"
+            + "FOREIGN KEY(" + COLUMN_FOOD_USER_ID + ") REFERENCES " + TABLE_NAME + "(" + COLUMN_ID + "))"; // Add foreign key constraint
+
 
 
 
@@ -63,21 +80,56 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_SESSION_TABLE);
         db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
+        db.execSQL(CREATE_FOOD_TABLE);
         insertInitialTips(db);
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
-        if (oldVersion < 6) {
+        if (oldVersion < 7) {
             // Only create the CurrentSession table if it doesn't exist
             db.execSQL(CREATE_TABLE);
             db.execSQL(CREATE_SESSION_TABLE);
             db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
+            db.execSQL(CREATE_FOOD_TABLE);
 
         }
         // Add more conditions here for other database upgrades
     }
+    public void insertFoodItem(int userId, String name, int calories, String imageUri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_FOOD_USER_ID, userId);
+        values.put(COLUMN_FOOD_NAME, name);
+        values.put(COLUMN_FOOD_CALORIES, calories);
+        values.put(COLUMN_FOOD_IMAGE_URI, imageUri);
+        db.insert(FOOD_TABLE_NAME, null, values);
+        db.close();
+    }
+    public List<FoodItem> getFoodItemsByUserId(int userId) {
+        List<FoodItem> foodItems = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(FOOD_TABLE_NAME,
+                new String[]{COLUMN_FOOD_NAME, COLUMN_FOOD_CALORIES, COLUMN_FOOD_IMAGE_URI},
+                COLUMN_FOOD_USER_ID + "=?",
+                new String[]{String.valueOf(userId)},
+                null, null, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOOD_NAME));
+                int calories = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FOOD_CALORIES));
+                String imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOOD_IMAGE_URI));
+                foodItems.add(new FoodItem(name, calories, imageUri));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return foodItems;
+    }
+
     private void insertInitialTips(SQLiteDatabase db) {
         String[] tips = {
                 "Tip: Drink plenty of water every day!",
@@ -180,8 +232,6 @@ public class SignUpHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    // Class to hold user details
-    // Class to hold user details
     public static class UserDetails implements Serializable {
         public int userId;
         public String gender;
@@ -342,6 +392,26 @@ public class SignUpHelper extends SQLiteOpenHelper {
             Log.e("SignUpHelper", "Failed to update calories remaining.");
         }
     }
+    public void updateFoodItem(int mealId, String name, int calories, String imageUri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_FOOD_NAME, name);
+        values.put(COLUMN_FOOD_CALORIES, calories);
+        values.put(COLUMN_FOOD_IMAGE_URI, imageUri);
+
+        // Update the database entry where the COLUMN_FOOD_ID matches the mealId
+        int rowsAffected = db.update(FOOD_TABLE_NAME, values, COLUMN_FOOD_ID + " = ?", new String[]{String.valueOf(mealId)});
+
+        if (rowsAffected > 0) {
+            Log.d("SignUpHelper", "Food item updated successfully.");
+        } else {
+            Log.e("SignUpHelper", "Failed to update food item.");
+        }
+
+
+        db.close();
+    }
+
     public void updateUserRemainingCalories(String userEmail, int remainingCalories) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -416,6 +486,12 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return imageUri;
     }
+    public void deleteFoodItem(int foodItemId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(FOOD_TABLE_NAME, COLUMN_FOOD_ID + " = ?", new String[]{String.valueOf(foodItemId)});
+        db.close();
+    }
+
 
 
 

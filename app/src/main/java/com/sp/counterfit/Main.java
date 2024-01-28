@@ -1,4 +1,3 @@
-
 package com.sp.counterfit;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -47,6 +46,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private SeekBar slider;
     private TextView textTipOfTheDay; // TextView for the tip of the day
     private ImageButton closeTipButton; // Button to close the tip
+    private SignUpHelper dbHelper;
+
 
     private RelativeLayout tipContainer; // RelativeLayout for the tip of the day
     private boolean isFirstLaunch;
@@ -63,6 +64,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         isFirstLaunch = true;
+        dbHelper = new SignUpHelper(this);
 
         // Initialize UI components
         initializeUI();
@@ -107,7 +109,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        // Get data from the result
                         Intent data = result.getData();
                         if (data != null) {
                             int addedCalories = data.getIntExtra("addedCalories", 0);
@@ -309,6 +310,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         } else if (id==R.id.nav_gyms) {
             Intent intent= new Intent(Main.this,Gym.class);
             startActivity(intent);
+        } else if (id==R.id.nav_food) {
+            Intent intent = new Intent(Main.this, Food.class);
+            startActivity(intent);
 
         }
 
@@ -325,13 +329,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
                 if (id== R.id.bot_home){
                     return true;
-                } else if (id==R.id.bot_food) {
-                    Intent intent = new Intent(Main.this, Home.class);
-                    startActivity(intent);
-                } else if (id==R.id.bot_gym) {
+                }else if (id==R.id.bot_gym) {
                     Intent intent = new Intent(Main.this, Gym.class);
                     startActivity(intent);
 
+                }else if (id==R.id.bot_food) {
+                    Intent intent = new Intent(Main.this, Food.class);
+                    startActivity(intent);
                 }
                 return false;
             }
