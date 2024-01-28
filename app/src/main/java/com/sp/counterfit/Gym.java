@@ -148,6 +148,12 @@ public class Gym extends AppCompatActivity implements OnMapReadyCallback, GymAda
                         return true;
                     } else if (id==R.id.bot_gym) {
                         item.setCheckable(true);
+                    }else if (id == R.id.bot_food) {
+                        Intent intent = new Intent(Gym.this, Food.class);
+                        item.setCheckable(true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        return true;
                     }
                     return false;
                 }

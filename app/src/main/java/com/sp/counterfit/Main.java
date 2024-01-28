@@ -48,7 +48,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private ImageButton closeTipButton; // Button to close the tip
     private SignUpHelper dbHelper;
 
-
     private RelativeLayout tipContainer; // RelativeLayout for the tip of the day
     private boolean isFirstLaunch;
     private SensorManager sensorManager;
@@ -57,7 +56,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private int stepCount = 0;
     private double baseBMR;
     private TextView stepsTextView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +71,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         checkAndResetCaloriesDaily();
         calculateAndSetCaloriesForNewUser();
         loadProfileImage();
-
-
-
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        caloriesRemaining = prefs.getInt("CaloriesRemaining", 0); // 0 is the default value
 
         SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String lastShownDate = appPrefs.getString("LastShownDate", "");
@@ -89,7 +86,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         } else {
             checkTipVisibility();
         }
-
 
         closeTipButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +127,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         closeTipButton = findViewById(R.id.closeTipButton);
         tipContainer = findViewById(R.id.tipbg);
 
-
         ImageView recoAddImageView = findViewById(R.id.reco_add);
 
         View headerView = navigationView.getHeaderView(0);
@@ -172,12 +167,18 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             slider.setMax(maxCalories);
         }
 
-
         setupBottomNavigationView();
     }
+
     private void updateRemainingCalories(int addedCalories) {
         caloriesRemaining -= addedCalories; // Subtract added calories
         updateSliderProgress(caloriesRemaining);
+
+        // Save the updated caloriesRemaining in SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("CaloriesRemaining", caloriesRemaining);
+        editor.apply();
 
         // Save the updated calories remaining in the database
         SignUpHelper dbHelper = new SignUpHelper(this);
@@ -187,29 +188,36 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
 
-
-
     private void retrieveAndDisplayUserBMR() {
         SignUpHelper dbHelper = new SignUpHelper(this);
         String currentUserEmail = dbHelper.getCurrentUserEmail();
 
         if (currentUserEmail != null) {
-            baseBMR = dbHelper.calculateBMRForCurrentUser();
-            baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
+            SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
+            if (userDetails != null) {
+                double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+                bmr = adjustBMRBasedOnWeightGoal(bmr, userDetails.weightGoal);
 
-            // Use the getCaloriesRemaining method to retrieve calories remaining for the current user
-            caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
+                // Set maximum value of SeekBar to calculated BMR
+                slider.setMax((int) bmr);
+                // Set initial progress of SeekBar to calculated calories remaining
+                int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
+                slider.setProgress((int) (bmr - caloriesRemaining));
 
-            View headerView = navigationView.getHeaderView(0);
-            TextView emailTextView = headerView.findViewById(R.id.emailTextView);
-            emailTextView.setText(currentUserEmail);
+                textRemainingCalories.setText(String.format("%s Remaining", caloriesRemaining));
 
-            updateSliderProgress(caloriesRemaining);
+                View headerView = navigationView.getHeaderView(0);
+                TextView emailTextView = headerView.findViewById(R.id.emailTextView);
+                emailTextView.setText(currentUserEmail);
+            } else {
+                textRemainingCalories.setText("User details not found");
+                slider.setProgress(0);
+            }
         } else {
             Log.d("Main", "No current user email found.");
+            // Optional: Redirect to login screen or show error message
         }
     }
-
 
     private void updateSliderProgress(int calories) {
         slider.setEnabled(false);
@@ -227,9 +235,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private void checkAndResetCaloriesDaily() {
         SignUpHelper dbHelper = new SignUpHelper(this);
         String currentUserEmail = dbHelper.getCurrentUserEmail();
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
 
         if (currentUserEmail != null) {
-            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
             String lastResetDate = prefs.getString("LastResetDate", "");
             String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
@@ -243,14 +252,18 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 editor.putInt("CaloriesRemaining", caloriesRemaining);
                 editor.apply();
             } else {
+                updateSliderProgress(caloriesRemaining);
                 caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
             }
             updateSliderProgress(caloriesRemaining);
         }
     }
+
     private void calculateAndSetCaloriesForNewUser() {
         SignUpHelper dbHelper = new SignUpHelper(this);
         String currentUserEmail = dbHelper.getCurrentUserEmail();
+        SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        caloriesRemaining = appPrefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
 
         if (currentUserEmail != null) {
             baseBMR = dbHelper.calculateBMRForCurrentUser();
@@ -269,7 +282,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
 
             // Save the calculated or retrieved caloriesRemaining in shared preferences
-            SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
             appPrefs.edit().putInt("CaloriesRemaining", caloriesRemaining).apply();
 
             // Update UI
@@ -282,17 +294,20 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
-            case "Gain 0.2 kg per week": return bmr + 200;
-            case "Gain 0.5 kg per week": return bmr + 500;
-            case "Maintain Weight": return bmr;
-            case "Lose 0.2 kg per week": return bmr - 200;
-            case "Lose 0.5 kg per week": return bmr - 500;
-            default: return bmr;
+            case "Gain 0.2 kg per week":
+                return bmr + 200;
+            case "Gain 0.5 kg per week":
+                return bmr + 500;
+            case "Maintain Weight":
+                return bmr;
+            case "Lose 0.2 kg per week":
+                return bmr - 200;
+            case "Lose 0.5 kg per week":
+                return bmr - 500;
+            default:
+                return bmr; // Default case if the weight goal is not recognized
         }
     }
-
-
-
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -304,16 +319,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         } else if (id == R.id.nav_home) {
 
         } else if (id == R.id.nav_about) {
-            Log.d("NavigationView","About clicked");
+            Log.d("NavigationView", "About clicked");
             Intent intent = new Intent(Main.this, About.class);
             startActivity(intent);
-        } else if (id==R.id.nav_gyms) {
-            Intent intent= new Intent(Main.this,Gym.class);
+        } else if (id == R.id.nav_gyms) {
+            Intent intent = new Intent(Main.this, Gym.class);
             startActivity(intent);
-        } else if (id==R.id.nav_food) {
+        } else if (id == R.id.nav_food) {
             Intent intent = new Intent(Main.this, Food.class);
             startActivity(intent);
-
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -327,13 +341,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
 
-                if (id== R.id.bot_home){
+                if (id == R.id.bot_home) {
                     return true;
-                }else if (id==R.id.bot_gym) {
+                } else if (id == R.id.bot_gym) {
                     Intent intent = new Intent(Main.this, Gym.class);
                     startActivity(intent);
-
-                }else if (id==R.id.bot_food) {
+                } else if (id == R.id.bot_food) {
                     Intent intent = new Intent(Main.this, Food.class);
                     startActivity(intent);
                 }
@@ -341,8 +354,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         });
     }
-
-
 
     private void logoutUser() {
         // Clear the current session from the database
@@ -355,16 +366,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         editor.clear();
         editor.apply();
 
-        // Reset caloriesRemaining to a default value or clear it
-        caloriesRemaining = 0;
-        updateSliderProgress(caloriesRemaining);
-
         // Redirect to the Login Activity
         Intent intent = new Intent(this, Home.class); // Replace with actual login activity class
         startActivity(intent);
         finish();
     }
-
 
     @Override
     public void onBackPressed() {
@@ -374,6 +380,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             super.onBackPressed();
         }
     }
+
     private void displayRandomTip() {
         SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String lastTipDate = appPrefs.getString("LastTipDate", "");
@@ -397,13 +404,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
 
-
     private void saveTipVisibilityState(boolean isVisible) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("IsTipVisible", isVisible);
         editor.apply();
     }
+
     private void checkTipVisibility() {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isTipVisible = sharedPreferences.getBoolean("IsTipVisible", true);
@@ -414,26 +421,32 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             displayRandomTip(); // Display the tip if it is visible
         }
     }
+
+
     private void setupStepCounter() {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
-            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+
+        if (stepCounterSensor != null) {
             stepListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
-                    if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                    if (isFirstLaunch) {
                         stepCount = (int) event.values[0];
-                        stepsTextView.setText(String.valueOf(stepCount)); // Update steps count on the TextView
-                        calculateAndDisplayUpdatedBMR();
+                        isFirstLaunch = false;
                     }
+                    int currentStepCount = (int) event.values[0];
+                    int stepsTakenToday = currentStepCount - stepCount;
+                    stepCount = currentStepCount;
+                    stepsTextView.setText(String.valueOf(stepsTakenToday));
                 }
 
                 @Override
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                    // Optional: Handle sensor accuracy changes
                 }
             };
-            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+        } else {
+            Log.d("Main", "Step Counter Sensor not available on this device.");
         }
     }
     private void calculateAndDisplayUpdatedBMR() {
@@ -442,25 +455,25 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         updateSliderProgress(caloriesRemaining);
         textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
     }
+    private double calculateBMR(String gender, int age, double weight, double height) {
+        if ("Male".equalsIgnoreCase(gender)) {
+            return 10 * weight + 6.25 * height * 100 - 5 * age + 5 + 500;
+        } else {
+            return 10 * weight + 6.25 * height * 100 - 5 * age - 161 + 300;
+        }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadProfileImage();
         if (stepCounterSensor != null) {
-            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Save the current value of caloriesRemaining when the app is paused
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("CaloriesRemaining", caloriesRemaining);
-        editor.apply();
-
         if (stepCounterSensor != null) {
             sensorManager.unregisterListener(stepListener);
         }
