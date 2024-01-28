@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItemClickListener {
 
@@ -58,9 +59,10 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         });
 
         currentUserEmail = dbHelper.getCurrentUserEmail();
-        foodItemAdapter = new AddFoodAdapter(this, new ArrayList<>(), this);
-        recyclerView.setAdapter(foodItemAdapter);
+        recyclerView = findViewById(R.id.recyclerView_food);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        loadFoodItems(); // Load food items initially
         setupActionBar();
     }
 
@@ -114,10 +116,11 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         intent.putExtra("mealId", foodItem.getId());
         intent.putExtra("mealName", foodItem.getName());
         intent.putExtra("calories", foodItem.getCalories());
-        intent.putExtra("imageUri", foodItem.getImageUrl());
+        intent.putExtra("imageUri", foodItem.getImageUrl()); // Ensure this is correct
 
         mealActivityResultLauncher.launch(intent);
     }
+
 
     @Override
     public void onAddMealClick(FoodItem foodItem) {
@@ -129,16 +132,16 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
         }
     }
-    public void onDeleteMealClick(int foodItemId) {
-        dbHelper.deleteFoodItem(foodItemId);
-        loadFoodItems(); // Reloads the food items from the database
-    }
+
+
 
 
     private void loadFoodItems() {
         int currentUserId = dbHelper.getCurrentUserId();
         if (currentUserId != -1) {
-            foodItemAdapter.updateFoodItems(dbHelper.getFoodItemsByUserId(currentUserId));
+            List<FoodItem> foodItems = dbHelper.getFoodItemsByUserId(currentUserId);
+            foodItemAdapter = new AddFoodAdapter(this, foodItems, this);
+            recyclerView.setAdapter(foodItemAdapter);
         }
     }
 }

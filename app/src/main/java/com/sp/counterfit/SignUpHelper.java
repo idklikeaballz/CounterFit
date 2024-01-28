@@ -112,23 +112,27 @@ public class SignUpHelper extends SQLiteOpenHelper {
         List<FoodItem> foodItems = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(FOOD_TABLE_NAME,
-                new String[]{COLUMN_FOOD_NAME, COLUMN_FOOD_CALORIES, COLUMN_FOOD_IMAGE_URI},
+                new String[]{COLUMN_FOOD_ID, COLUMN_FOOD_NAME, COLUMN_FOOD_CALORIES, COLUMN_FOOD_IMAGE_URI},
                 COLUMN_FOOD_USER_ID + "=?",
                 new String[]{String.valueOf(userId)},
                 null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FOOD_ID));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOOD_NAME));
                 int calories = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FOOD_CALORIES));
                 String imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOOD_IMAGE_URI));
-                foodItems.add(new FoodItem(name, calories, imageUri));
+                FoodItem foodItem = new FoodItem(name, calories, imageUri);
+                foodItem.setId(id);  // Set the id for the food item
+                foodItems.add(foodItem);
             } while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
         return foodItems;
     }
+
 
     private void insertInitialTips(SQLiteDatabase db) {
         String[] tips = {

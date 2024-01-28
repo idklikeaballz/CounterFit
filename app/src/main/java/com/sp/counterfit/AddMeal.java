@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import android.Manifest;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.annotation.Nullable;
@@ -69,7 +70,8 @@ public class AddMeal extends AppCompatActivity {
             String imageUriString = extras.getString("imageUri", "");
             if (!imageUriString.isEmpty()) {
                 imageUri = Uri.parse(imageUriString);
-                mealImageView.setImageURI(imageUri);
+                // Load image using Glide
+                Glide.with(this).load(imageUri).into(mealImageView);
             }
         }
     }
@@ -124,6 +126,7 @@ public class AddMeal extends AppCompatActivity {
         }
     }
 
+
     private void saveMeal() {
         String mealName = mealNameEditText.getText().toString();
         String calorieStr = caloriesEditText.getText().toString();
@@ -134,15 +137,14 @@ public class AddMeal extends AppCompatActivity {
             return;
         }
 
+        String imageUriString = (imageUri != null) ? imageUri.toString() : "";
+
         if (mealId == -1) {
-            // New Meal - Insert
-            dbHelper.insertFoodItem(dbHelper.getCurrentUserId(), mealName, calories, imageUri.toString());
+            dbHelper.insertFoodItem(dbHelper.getCurrentUserId(), mealName, calories, imageUriString);
         } else {
-            // Existing Meal - Update
-            dbHelper.updateFoodItem(mealId, mealName, calories, imageUri.toString());
+            dbHelper.updateFoodItem(mealId, mealName, calories, imageUriString);
         }
 
-        // Notify the Food activity about the change
         setResult(RESULT_OK);
         resetFieldsAndFinish();
     }
