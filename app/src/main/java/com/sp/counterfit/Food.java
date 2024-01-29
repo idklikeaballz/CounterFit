@@ -31,10 +31,14 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
                         if (result.getResultCode() == RESULT_OK) {
+                            // Notify the Main activity that the data has changed
+                            Intent returnIntent = new Intent();
+                            setResult(RESULT_OK, returnIntent);
                             loadFoodItems();
                         }
                     }
             );
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,10 +132,21 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
             int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
             dbHelper.updateUserRemainingCalories(currentUserEmail, caloriesRemaining - foodItem.getCalories());
             Toast.makeText(this, "Calories updated!", Toast.LENGTH_SHORT).show();
+
+            // Prepare data intent for result
+            Intent data = new Intent();
+            data.putExtra("addedCalories", foodItem.getCalories());
+
+            // Set result and finish the activity
+            setResult(RESULT_OK, data);
+            // finish(); // If you want to close the Food activity after adding a meal
         } else {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+
 
 
 
