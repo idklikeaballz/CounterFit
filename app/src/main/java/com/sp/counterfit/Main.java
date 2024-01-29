@@ -56,6 +56,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private int stepCount = 0;
     private double baseBMR;
     private TextView stepsTextView;
+    private int previousTotalSteps = 0; // Store the total steps count from the previous update
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         retrieveAndDisplayUserBMR();
         checkAndResetCaloriesDaily();
         calculateAndSetCaloriesForNewUser();
+        previousTotalSteps = getSavedStepCount();
+
         loadProfileImage();
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         caloriesRemaining = prefs.getInt("CaloriesRemaining", 0); // 0 is the default value
@@ -251,6 +254,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 editor.putString("LastResetDate", currentDate);
                 editor.putInt("CaloriesRemaining", caloriesRemaining);
                 editor.apply();
+                saveStepCount(0);
+                stepCount = 0;
+                stepsTextView.setText("0");
             } else {
                 updateSliderProgress(caloriesRemaining);
                 caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
@@ -410,6 +416,17 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         editor.putBoolean("IsTipVisible", isVisible);
         editor.apply();
     }
+    private void saveStepCount(int stepCount) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("StepCount", stepCount);
+        editor.apply();
+    }
+
+    private int getSavedStepCount() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        return prefs.getInt("StepCount", 0);
+    }
 
     private void checkTipVisibility() {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -431,30 +448,48 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             stepListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
+                    int totalSteps = (int) event.values[0];
+
                     if (isFirstLaunch) {
-                        stepCount = (int) event.values[0];
+                        previousTotalSteps = totalSteps;
                         isFirstLaunch = false;
                     }
-                    int currentStepCount = (int) event.values[0];
-                    int stepsTakenToday = currentStepCount - stepCount;
-                    stepCount = currentStepCount;
-                    stepsTextView.setText(String.valueOf(stepsTakenToday));
+
+                    // Calculate steps taken since the app's first launch
+                    int stepsSinceLaunch = totalSteps - getSavedStepCount();
+                    stepsTextView.setText(String.valueOf(stepsSinceLaunch)); // Update the displayed step count
+
+                    calculateAndDisplayUpdatedBMR(stepsSinceLaunch); // Calculate calories based on total steps since launch
                 }
 
                 @Override
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {
                 }
             };
+            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
             Log.d("Main", "Step Counter Sensor not available on this device.");
         }
     }
-    private void calculateAndDisplayUpdatedBMR() {
-        double updatedBMR = baseBMR + (stepCount * 0.04);
-        caloriesRemaining = (int) Math.round(updatedBMR); // Update caloriesRemaining
-        updateSliderProgress(caloriesRemaining);
+
+
+    private void calculateAndDisplayUpdatedBMR(int totalStepsSinceLaunch) {
+        double caloriesAdded = totalStepsSinceLaunch * 0.04; // Calculate added calories based on total steps since launch
+
+        // Update the calories remaining
+        caloriesRemaining = (int) (Math.round(baseBMR) + caloriesAdded);
+        updateSliderProgress(caloriesRemaining); // Update UI to reflect new value
         textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+
+        // Update calories remaining in SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("CaloriesRemaining", caloriesRemaining);
+        editor.apply();
     }
+
+
+
     private double calculateBMR(String gender, int age, double weight, double height) {
         if ("Male".equalsIgnoreCase(gender)) {
             return 10 * weight + 6.25 * height * 100 - 5 * age + 5 + 500;
