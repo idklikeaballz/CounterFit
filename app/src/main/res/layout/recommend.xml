@@ -89,7 +89,7 @@
 
 
   <com.google.android.material.bottomnavigation.BottomNavigationView
-      android:id="@+id/bottom_navigation_about"
+      android:id="@+id/bottom_navigation_recommend"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="#1E1E1E"

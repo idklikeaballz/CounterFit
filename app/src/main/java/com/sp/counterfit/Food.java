@@ -45,6 +45,7 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food);
 
+
         setupUI();
     }
 
