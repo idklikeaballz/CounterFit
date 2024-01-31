@@ -137,9 +137,12 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
             // Prepare data intent for result
             Intent data = new Intent();
             data.putExtra("addedCalories", foodItem.getCalories());
+            data.putExtra("source", "Food"); // Add a source key to differentiate the result
 
             // Set result and finish the activity
             setResult(RESULT_OK, data);
+            finish();
+
             // finish(); // If you want to close the Food activity after adding a meal
         } else {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();

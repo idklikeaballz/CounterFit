@@ -220,8 +220,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 // Set initial progress of SeekBar to calculated calories remaining
                 int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
                 slider.setProgress((int) (bmr - caloriesRemaining));
-
-                textRemainingCalories.setText(String.format("%s Remaining", caloriesRemaining));
+                if (caloriesRemaining >= 0) {
+                    slider.setProgress(0);
+                    slider.setProgress(slider.getMax() - caloriesRemaining); // Display remaining calories
+                    textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+                } else {
+                    slider.setProgress(slider.getMax()); // Display as full if over the goal
+                    textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Over", Math.abs(caloriesRemaining)));
+                }
 
                 View headerView = navigationView.getHeaderView(0);
                 TextView emailTextView = headerView.findViewById(R.id.emailTextView);
