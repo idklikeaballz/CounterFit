@@ -56,6 +56,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private Sensor stepCounterSensor;
     private SensorEventListener stepListener;
     private int stepCount = 0;
+    private int lastReportedStepCount = 0; // Add this as a member variable
     private double baseBMR;
     private TextView stepsTextView;
 
@@ -452,18 +453,38 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
+        int savedInitialStepCount = getInitialStepCount();
         if (stepCounterSensor != null) {
             stepListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
+                    int totalStepsSinceReboot = (int) event.values[0];
+
                     if (isFirstLaunch) {
-                        stepCount = (int) event.values[0];
                         isFirstLaunch = false;
+                        if (savedInitialStepCount == 0) {
+                            saveInitialStepCount(totalStepsSinceReboot);
+                        } else {
+                            lastReportedStepCount = savedInitialStepCount;
+                        }
                     }
-                    int currentStepCount = (int) event.values[0];
-                    int stepsTakenToday = currentStepCount - stepCount;
-                    stepCount = currentStepCount;
-                    stepsTextView.setText(String.valueOf(stepsTakenToday));
+
+                    int stepsTakenSinceLastUpdate = totalStepsSinceReboot - lastReportedStepCount;
+                    lastReportedStepCount = totalStepsSinceReboot;
+
+                    if (stepsTakenSinceLastUpdate > 0) {
+                        updateCaloriesWithSteps(stepsTakenSinceLastUpdate);
+                        if (caloriesRemaining >= 0) {
+                            slider.setProgress(0);
+                            slider.setProgress(slider.getMax() - caloriesRemaining); // Display remaining calories
+                            textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+                        } else {
+                            slider.setProgress(slider.getMax()); // Display as full if over the goal
+                            textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Over", Math.abs(caloriesRemaining)));
+                        }
+                    }
+
+                    stepsTextView.setText(String.valueOf(totalStepsSinceReboot - getInitialStepCount()));
                 }
 
                 @Override
@@ -473,6 +494,23 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         } else {
             Log.d("Main", "Step Counter Sensor not available on this device.");
         }
+    }
+    private void saveInitialStepCount(int stepCount) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("InitialStepCount", stepCount);
+        editor.apply();
+    }
+
+    private void updateCaloriesWithSteps(int newSteps) {
+        double caloriesBurned = newSteps * 0.04;
+        caloriesRemaining += caloriesBurned;
+        updateSliderProgress(caloriesRemaining);
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", (int) caloriesRemaining));
+    }
+    private int getInitialStepCount() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        return prefs.getInt("InitialStepCount", 0);
     }
     private void calculateAndDisplayUpdatedBMR() {
         double updatedBMR = baseBMR + (stepCount * 0.04);
