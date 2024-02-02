@@ -33,7 +33,6 @@ public class SignUp3 extends AppCompatActivity {
             actionBar.setCustomView(R.layout.action_bar_create_account);
             actionBar.setBackgroundDrawable(getResources().getDrawable(R.color.headerbg));
         }
-
         // Initialize input fields
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.PasswordEditText);

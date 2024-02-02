@@ -140,14 +140,29 @@ public class AddMeal extends AppCompatActivity {
         String imageUriString = (imageUri != null) ? imageUri.toString() : "";
 
         if (mealId == -1) {
-            dbHelper.insertFoodItem(dbHelper.getCurrentUserId(), mealName, calories, imageUriString);
+            // Insert the new meal and get its ID
+            long newMealId = dbHelper.insertFoodItem(dbHelper.getCurrentUserId(), mealName, calories, imageUriString);
+            if (newMealId == -1) {
+                Toast.makeText(this, "Error saving meal", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Meal saved successfully", Toast.LENGTH_SHORT).show();
+                // Prepare data to pass back to calling activity
+                Intent data = new Intent();
+                data.putExtra("mealId", newMealId); // Use the new meal ID
+                data.putExtra("imageUri", imageUriString);
+                setResult(RESULT_OK, data);
+            }
         } else {
+            // Update existing meal
             dbHelper.updateFoodItem(mealId, mealName, calories, imageUriString);
+            // No need to pass back the meal ID since it hasn't changed
+            setResult(RESULT_OK);
         }
 
-        setResult(RESULT_OK);
-        resetFieldsAndFinish();
+        // Close this activity
+        finish();
     }
+
 
     private void deleteMeal() {
         if (mealId != -1) {

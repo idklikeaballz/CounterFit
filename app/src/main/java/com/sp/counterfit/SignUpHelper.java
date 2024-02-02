@@ -98,16 +98,20 @@ public class SignUpHelper extends SQLiteOpenHelper {
         }
         // Add more conditions here for other database upgrades
     }
-    public void insertFoodItem(int userId, String name, int calories, String imageUri) {
+    public long insertFoodItem(int userId, String name, int calories, String imageUri) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_FOOD_USER_ID, userId);
         values.put(COLUMN_FOOD_NAME, name);
         values.put(COLUMN_FOOD_CALORIES, calories);
         values.put(COLUMN_FOOD_IMAGE_URI, imageUri);
-        db.insert(FOOD_TABLE_NAME, null, values);
+
+        // insert() returns the row ID of the newly inserted row, or -1 if an error occurred
+        long newRowId = db.insert(FOOD_TABLE_NAME, null, values);
         db.close();
+        return newRowId;
     }
+
     public List<FoodItem> getFoodItemsByUserId(int userId) {
         List<FoodItem> foodItems = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();

@@ -1,19 +1,26 @@
 package com.sp.counterfit;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +32,36 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
     private AddFoodAdapter foodItemAdapter;
     private SignUpHelper dbHelper;
     private Button btnNewMeal;
+    private ImageView mealImageView;
+
     private String currentUserEmail;
+    private static final int REQUEST_EXTERNAL_STORAGE_PERMISSION = 1;
+
     private final ActivityResultLauncher<Intent> mealActivityResultLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == RESULT_OK) {
-                            // Notify the Main activity that the data has changed
-                            Intent returnIntent = new Intent();
-                            setResult(RESULT_OK, returnIntent);
-                            loadFoodItems();
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if(uri != null){
+                        // Explicitly set the flags for persistable permissions
+                        final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                        // Check for write permission if your app needs it
+                        // takeFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+
+                        try {
+                            // Request persistable permissions
+                            getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                        } catch (SecurityException e) {
+                            Log.e("FoodActivity", "Error taking persistable URI permission", e);
                         }
+
+                        // Your existing code to handle the result
+                        Intent returnIntent = new Intent();
+                        setResult(RESULT_OK, returnIntent);
+                        loadFoodItems();
                     }
-            );
+                }
+            });
+
 
 
     @Override
@@ -45,9 +69,27 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food);
 
-
+        checkStoragePermission();
         setupUI();
+
+
     }
+    private void checkStoragePermission() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_EXTERNAL_STORAGE_PERMISSION && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            loadFoodItems();
+        } else {
+            Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void setupUI() {
         bottomNavigationView = findViewById(R.id.bottom_navigation_food);
@@ -154,13 +196,18 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
 
 
 
-
     private void loadFoodItems() {
         int currentUserId = dbHelper.getCurrentUserId();
         if (currentUserId != -1) {
             List<FoodItem> foodItems = dbHelper.getFoodItemsByUserId(currentUserId);
             foodItemAdapter = new AddFoodAdapter(this, foodItems, this);
             recyclerView.setAdapter(foodItemAdapter);
+            Bundle extras = getIntent().getExtras();
+            if (extras != null && extras.containsKey("imageUri")) {
+                Uri imageUri = Uri.parse(extras.getString("imageUri"));
+                Glide.with(this).load(imageUri).into(mealImageView);
+            }
         }
+
     }
 }

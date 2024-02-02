@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,8 +16,9 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class AddFoodAdapter extends RecyclerView.Adapter<AddFoodAdapter.FoodViewHolder> {
-    private List<FoodItem> foodItemList;
-    private Context context;
+    private List<FoodItem> foodItemList; // List of food items to display
+    private final Context context; // Context for inflating layouts and Glide usage
+    private final OnFoodItemClickListener listener; // Listener for click events
 
     // Constructor
     public AddFoodAdapter(Context context, List<FoodItem> foodItemList, OnFoodItemClickListener listener) {
@@ -24,17 +26,18 @@ public class AddFoodAdapter extends RecyclerView.Adapter<AddFoodAdapter.FoodView
         this.foodItemList = foodItemList;
         this.listener = listener;
     }
+
+    // Interface for click events
     public interface OnFoodItemClickListener {
         void onAddMealClick(FoodItem foodItem);
         void onUpdateMealClick(FoodItem foodItem);
     }
-    private OnFoodItemClickListener listener;
 
-    // ViewHolder class that holds references to the views for each food item
+    // ViewHolder class
     public static class FoodViewHolder extends RecyclerView.ViewHolder {
-        public ImageView foodImage;
-        public TextView foodName;
-        public TextView foodCalories;
+        public final ImageView foodImage;
+        public final TextView foodName;
+        public final TextView foodCalories;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -44,24 +47,25 @@ public class AddFoodAdapter extends RecyclerView.Adapter<AddFoodAdapter.FoodView
         }
     }
 
+    @NonNull
     @Override
-    public FoodViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public FoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_meal, parent, false);
         return new FoodViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(FoodViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull FoodViewHolder holder, int position) {
         FoodItem foodItem = foodItemList.get(position);
         holder.foodName.setText(foodItem.getName());
-        holder.foodCalories.setText(String.valueOf(foodItem.getCalories()) + " Calories");
-        holder.itemView.setOnClickListener(v -> showOptionsDialog(foodItem));
+        holder.foodCalories.setText(String.format("%d Calories", foodItem.getCalories()));
 
-
-        // Use Glide to load the food image
+        // Use Glide to load the food image. Consider adding a placeholder for better UX
         Glide.with(context)
                 .load(foodItem.getImageUrl())
                 .into(holder.foodImage);
+
+        holder.itemView.setOnClickListener(v -> showOptionsDialog(foodItem));
     }
 
     @Override
@@ -69,19 +73,21 @@ public class AddFoodAdapter extends RecyclerView.Adapter<AddFoodAdapter.FoodView
         return foodItemList.size();
     }
 
-    // Method to update the list of food items
+    // Update food items list and refresh RecyclerView
     public void updateFoodItems(List<FoodItem> foodItems) {
         this.foodItemList = foodItems;
         notifyDataSetChanged();
     }
+
+    // Show dialog for add or update meal options
     private void showOptionsDialog(FoodItem foodItem) {
         CharSequence[] options = {"Add Meal", "Update"};
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Select Option");
+        builder.setTitle(foodItem.getName());
         builder.setItems(options, (dialog, item) -> {
-            if (options[item].equals("Add Meal")) {
+            if ("Add Meal".equals(options[item])) {
                 listener.onAddMealClick(foodItem);
-            } else if (options[item].equals("Update")) {
+            } else if ("Update".equals(options[item])) {
                 listener.onUpdateMealClick(foodItem);
             }
         });

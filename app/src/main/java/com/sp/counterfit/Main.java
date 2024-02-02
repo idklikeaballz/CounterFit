@@ -9,6 +9,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,6 +34,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import java.util.Locale;
@@ -257,31 +260,29 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }
 
     private void checkAndResetCaloriesDaily() {
-        SignUpHelper dbHelper = new SignUpHelper(this);
-        String currentUserEmail = dbHelper.getCurrentUserEmail();
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
+        String lastResetDate = prefs.getString("LastResetDate", "");
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        if (currentUserEmail != null) {
-            String lastResetDate = prefs.getString("LastResetDate", "");
-            String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        Log.d("CalorieReset", "Current Date: " + currentDate + ", Last Reset Date: " + lastResetDate);
 
-            if (!currentDate.equals(lastResetDate)) {
-                baseBMR = dbHelper.calculateBMRForCurrentUser(); // Retrieve and calculate BMR for the current user
-                baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
-                caloriesRemaining = (int) Math.round(baseBMR); // Reset caloriesRemaining
+        if (!currentDate.equals(lastResetDate)) {
+            baseBMR = dbHelper.calculateBMRForCurrentUser(); // Make sure this method works correctly
+            baseBMR = adjustBMRBasedOnWeightGoal(baseBMR, dbHelper.getWeightGoalForCurrentUser());
+            caloriesRemaining = (int) Math.round(baseBMR); // Reset caloriesRemaining
+            Log.d("CalorieReset", "Calories reset to: " + caloriesRemaining);
 
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("LastResetDate", currentDate);
-                editor.putInt("CaloriesRemaining", caloriesRemaining);
-                editor.apply();
-            } else {
-                updateSliderProgress(caloriesRemaining);
-                caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
-            }
-            updateSliderProgress(caloriesRemaining);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("LastResetDate", currentDate);
+            editor.putInt("CaloriesRemaining", caloriesRemaining);
+            editor.apply();
+        } else {
+            caloriesRemaining = prefs.getInt("CaloriesRemaining", (int) Math.round(baseBMR));
+            Log.d("CalorieReset", "Calories for today: " + caloriesRemaining);
         }
+        updateSliderProgress(caloriesRemaining); // Make sure this updates your UI correctly
     }
+
 
     private void calculateAndSetCaloriesForNewUser() {
         SignUpHelper dbHelper = new SignUpHelper(this);
@@ -345,13 +346,20 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         } else if (id == R.id.nav_about) {
             Log.d("NavigationView", "About clicked");
             Intent intent = new Intent(Main.this, About.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
+            return true;
         } else if (id == R.id.nav_gyms) {
             Intent intent = new Intent(Main.this, Gym.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
+            return true;
+
         } else if (id == R.id.nav_food) {
             Intent intent = new Intent(Main.this, Food.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             foodActivityResultLauncher.launch(intent);
+            return true;
 
         }
 
@@ -370,10 +378,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     return true;
                 } else if (id == R.id.bot_gym) {
                     Intent intent = new Intent(Main.this, Gym.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
+                    return true;
                 } else if (id == R.id.bot_food) {
                     Intent intent = new Intent(Main.this, Food.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     foodActivityResultLauncher.launch(intent);
+                    return true;
 
                 }
                 return false;
@@ -529,6 +541,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     @Override
     protected void onResume() {
         super.onResume();
+        checkAndResetCaloriesDaily();
         if (stepCounterSensor != null) {
             sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
@@ -537,6 +550,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     @Override
     protected void onPause() {
         super.onPause();
+        checkAndResetCaloriesDaily();
         if (stepCounterSensor != null) {
             sensorManager.unregisterListener(stepListener);
         }
@@ -563,6 +577,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         }
     }
+
 
 
 }
