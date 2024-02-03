@@ -1,9 +1,5 @@
 package com.sp.counterfit;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class GymAdapter extends RecyclerView.Adapter<GymAdapter.GymViewHolder> {
-
     private List<GymItem> gymList;
+    private OnGymItemClickListener listener;
+
+    public interface OnGymItemClickListener {
+        void onGymItemClick(GymItem gymItem);
+    }
 
     public static class GymViewHolder extends RecyclerView.ViewHolder {
         public ImageView imageViewGym;
@@ -29,8 +29,9 @@ public class GymAdapter extends RecyclerView.Adapter<GymAdapter.GymViewHolder> {
         }
     }
 
-    public GymAdapter(List<GymItem> gymList) {
+    public GymAdapter(List<GymItem> gymList, OnGymItemClickListener listener) {
         this.gymList = gymList;
+        this.listener = listener;
     }
 
     @Override
@@ -47,43 +48,13 @@ public class GymAdapter extends RecyclerView.Adapter<GymAdapter.GymViewHolder> {
         holder.textViewGymName.setText(gym.getName());
         holder.textViewGymAddress.setText(gym.getAddress());
 
-        // Set the click listener for the CardView
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Create an AlertDialog.Builder
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                builder.setMessage("Do you want to view the location on Google Maps?");
-
-                // Set up the buttons
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User clicked Yes button
-                        Uri gmmIntentUri = Uri.parse("geo:" + gym.getLatitude() + "," + gym.getLongitude());
-                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-
-                        mapIntent.setPackage("com.google.android.apps.maps");
-
-                        if (mapIntent.resolveActivity(view.getContext().getPackageManager()) != null) {
-                            view.getContext().startActivity(mapIntent);
-                        }
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                        // Nothing to do here
-                    }
-                });
-
-                // Create and show the AlertDialog
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                listener.onGymItemClick(gym);
             }
         });
-
     }
-
 
     @Override
     public int getItemCount() {

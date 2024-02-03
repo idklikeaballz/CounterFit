@@ -1,5 +1,6 @@
 package com.sp.counterfit;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,12 +8,18 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Recommend extends AppCompatActivity implements MealAdapter.OnMealClickListener {
     private ViewPager2 healthyDietViewPager, bulkingDietViewPager;
+    private BottomNavigationView bottomNavigationView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +29,8 @@ public class Recommend extends AppCompatActivity implements MealAdapter.OnMealCl
         // Initialize ViewPager2 elements
         healthyDietViewPager = findViewById(R.id.healthyDietViewPager);
         bulkingDietViewPager = findViewById(R.id.bulkingDietViewPager);
+        bottomNavigationView = findViewById(R.id.bottom_navigation_recommend);
+        setupBottomNavigationView();
 
         // Setup ViewPager2 with adapters
         setupViewPager(healthyDietViewPager, getHealthyDietMeals());
@@ -75,5 +84,47 @@ public class Recommend extends AppCompatActivity implements MealAdapter.OnMealCl
         meals.add(new MealItem("Lobster Mac & Cheese", "731 Calories", R.drawable.bulking_meal3));
         meals.add(new MealItem("Roast Chicken Pie", "751 Calories", R.drawable.bulking_meal4));
         return meals;
+    }
+    private void setupBottomNavigationView() {
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                    int id = item.getItemId();
+                    if (id == R.id.bot_home) {
+                        Intent intent = new Intent(Recommend.this, Main.class);
+                        item.setCheckable(true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        return true;
+                    } else if (id==R.id.bot_gym) {
+                        Intent intent = new Intent(Recommend.this, Gym.class);
+                        item.setCheckable(true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        return true;
+                    }else if (id == R.id.bot_food) {
+                        Intent intent = new Intent(Recommend.this, Food.class);
+                        item.setCheckable(true);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            unselectBottomNavigationViewItems();
+
+
+        } else {
+            Log.e("AboutActivity", "BottomNavigationView not found in the layout.");
+        }
+    }
+    private void unselectBottomNavigationViewItems() {
+        // We can loop through all menu items and uncheck them
+        int size = bottomNavigationView.getMenu().size();
+        for (int i = 0; i < size; i++) {
+            bottomNavigationView.getMenu().getItem(i).setCheckable(false);
+        }
     }
 }
