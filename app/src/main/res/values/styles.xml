@@ -13,4 +13,14 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+    <style name="CustomSearchView" parent="Widget.AppCompat.SearchView">
+        <!-- Customize background -->
+        <item name="queryBackground">@drawable/search_view_background</item>
+        <!-- Customize text color -->
+        <item name="android:textColor">@color/textColor</item>
+        <!-- Customize hint text color -->
+        <item name="android:textColorHint">@color/hintColor</item>
+        <!-- Other customizations -->
+    </style>
+
 </resources>
