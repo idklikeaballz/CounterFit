@@ -64,16 +64,16 @@ public class AddMeal extends AppCompatActivity {
         // Get data passed from the previous activity
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            mealId = extras.getInt("mealId", -1); // Default to -1 if not found
+            mealId = extras.getInt("mealId", -1);
             mealNameEditText.setText(extras.getString("mealName", ""));
             caloriesEditText.setText(String.valueOf(extras.getInt("calories", 0)));
             String imageUriString = extras.getString("imageUri", "");
             if (!imageUriString.isEmpty()) {
                 imageUri = Uri.parse(imageUriString);
-                // Load image using Glide
-                Glide.with(this).load(imageUri).into(mealImageView);
+                Glide.with(this).load(imageUri).into(mealImageView); // Use Glide to load the image
             }
         }
+        
     }
 
     private void chooseImageSource() {

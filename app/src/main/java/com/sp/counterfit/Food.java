@@ -9,11 +9,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -22,6 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +38,7 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
     private SignUpHelper dbHelper;
     private Button btnNewMeal;
     private ImageView mealImageView;
+    private SearchView searchView;
 
     private String currentUserEmail;
     private static final int REQUEST_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -44,8 +50,6 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
                     if(uri != null){
                         // Explicitly set the flags for persistable permissions
                         final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                        // Check for write permission if your app needs it
-                        // takeFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
                         try {
                             // Request persistable permissions
@@ -71,7 +75,7 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
 
         checkStoragePermission();
         setupUI();
-
+        setupSearchView();
 
     }
     private void checkStoragePermission() {
@@ -111,6 +115,7 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
 
         loadFoodItems(); // Load food items initially
         setupActionBar();
+        searchView = findViewById(R.id.search_food);
     }
 
     private void setupBottomNavigationView() {
@@ -163,29 +168,24 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         intent.putExtra("mealId", foodItem.getId());
         intent.putExtra("mealName", foodItem.getName());
         intent.putExtra("calories", foodItem.getCalories());
-        intent.putExtra("imageUri", foodItem.getImageUrl()); // Ensure this is correct
-
+        intent.putExtra("imageUri", foodItem.getImageUrl()); // Pass the image URI here
         mealActivityResultLauncher.launch(intent);
     }
-
 
     @Override
     public void onAddMealClick(FoodItem foodItem) {
         if (currentUserEmail != null) {
             int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
-            dbHelper.updateUserRemainingCalories(currentUserEmail, caloriesRemaining - foodItem.getCalories());
+            // Round calories to the nearest integer
+            int caloriesToAdd = Math.round((float) foodItem.getCalories());
+            dbHelper.updateUserRemainingCalories(currentUserEmail, caloriesRemaining - caloriesToAdd);
             Toast.makeText(this, "Calories updated!", Toast.LENGTH_SHORT).show();
 
             // Prepare data intent for result
             Intent data = new Intent();
-            data.putExtra("addedCalories", foodItem.getCalories());
-            data.putExtra("source", "Food"); // Add a source key to differentiate the result
-
-            // Set result and finish the activity
+            data.putExtra("addedCalories", caloriesToAdd); // Pass the rounded value
             setResult(RESULT_OK, data);
             finish();
-
-            // finish(); // If you want to close the Food activity after adding a meal
         } else {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
         }
@@ -209,5 +209,68 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
             }
         }
 
+    }
+    private void setupSearchView() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                EdamamService.searchFood(query, new EdamamService.Callback() {
+                    @Override
+                    public void onResponse(List<FoodItem> foodItems) {
+                        runOnUiThread(() -> showFoodDialog(foodItems));
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> Toast.makeText(Food.this, "Error: " + error, Toast.LENGTH_SHORT).show());
+                    }
+                });
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+    }
+
+    private void showFoodDialog(List<FoodItem> foodItems) {
+        if(isFinishing()) {
+            // Activity is finishing, do not proceed to show dialog
+            return;
+        }
+        CharSequence[] foodNames = new CharSequence[foodItems.size()];
+        for (int i = 0; i < foodItems.size(); i++) {
+            foodNames[i] = foodItems.get(i).getName() + ": " + foodItems.get(i).getCalories() + " calories"; // Updated to show name and calories
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a Food");
+        builder.setItems(foodNames, (dialog, which) -> {
+            FoodItem selectedFood = foodItems.get(which);
+            Toast.makeText(this, selectedFood.getName() + " added!", Toast.LENGTH_SHORT).show();
+            if (currentUserEmail != null) {
+                int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
+                // Round calories to the nearest integer
+                int caloriesToAdd = Math.round((float) selectedFood.getCalories());
+                dbHelper.updateUserRemainingCalories(currentUserEmail, caloriesRemaining - caloriesToAdd);
+                Toast.makeText(this, "Calories updated!", Toast.LENGTH_SHORT).show();
+                // Prepare data intent for result
+                Intent data = new Intent();
+                data.putExtra("addedCalories", caloriesToAdd); // Pass the rounded value
+                setResult(RESULT_OK, data);
+                finish();
+            }
+
+
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(v -> {
+            // Ensure the dialog closes on the first press of "Cancel"
+            dialog.dismiss();
+        });
     }
 }

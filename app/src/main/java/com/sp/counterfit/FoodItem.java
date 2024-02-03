@@ -3,13 +3,15 @@ package com.sp.counterfit;
 public class FoodItem {
     private int id;
     private String name;
-    private int calories;
+    private double calories; // Change to double
     private String imageUrl;
-    public FoodItem(String name, int calories, String imageUrl) {
+
+    public FoodItem(String name, double calories, String imageUrl) {
         this.name = name;
         this.calories = calories;
         this.imageUrl = imageUrl;
     }
+
     public int getId() {
         return id;
     }
@@ -23,7 +25,7 @@ public class FoodItem {
         return name;
     }
 
-    public int getCalories() {
+    public double getCalories() {
         return calories;
     }
 
@@ -36,11 +38,13 @@ public class FoodItem {
         this.name = name;
     }
 
-    public void setCalories(int calories) {
+    public void setCalories(double calories) {
         this.calories = calories;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    @Override
+    public String toString() {
+        // Return a string that combines the food name and calories
+        return name + " - " + calories + " calories";
     }
 }

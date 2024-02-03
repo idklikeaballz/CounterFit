@@ -57,6 +57,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private boolean isFirstLaunch;
     private SensorManager sensorManager;
     private Sensor stepCounterSensor;
+    private String currentUserEmail; // Declare it here so it's accessible throughout the class
+
     private SensorEventListener stepListener;
     private int stepCount = 0;
     private int lastReportedStepCount = 0; // Add this as a member variable
@@ -106,7 +108,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
+        setupActivityResultLaunchers();
 
+
+
+    }
+    private void setupActivityResultLaunchers() {
         recommendActivityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -130,8 +137,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     }
                 }
         );
-
     }
+
 
     private void initializeUI() {
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -144,6 +151,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         textTipOfTheDay = findViewById(R.id.tipTextView);
         closeTipButton = findViewById(R.id.closeTipButton);
         tipContainer = findViewById(R.id.tipbg);
+        this.currentUserEmail = dbHelper.getCurrentUserEmail();
 
         ImageView recoAddImageView = findViewById(R.id.reco_add);
 
@@ -193,6 +201,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (caloriesRemaining < 0) {
             updateSliderProgress(caloriesRemaining);
         }
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
         updateSliderProgress(caloriesRemaining);
 
         // Save the updated caloriesRemaining in SharedPreferences
@@ -518,8 +527,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         double caloriesBurned = newSteps * 0.04;
         caloriesRemaining += caloriesBurned;
         updateSliderProgress(caloriesRemaining);
-        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", (int) caloriesRemaining));
-    }
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%.0f Remaining", caloriesRemaining));    }
     private int getInitialStepCount() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         return prefs.getInt("InitialStepCount", 0);
@@ -542,10 +550,23 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     protected void onResume() {
         super.onResume();
         checkAndResetCaloriesDaily();
+        displayUpdatedCalories();
+
+
         if (stepCounterSensor != null) {
             sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
+    private void displayUpdatedCalories() {
+        // Fetch the latest calories remaining value
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        caloriesRemaining = prefs.getInt("CaloriesRemaining", 0); // Default to 0 if not found
+
+        // Update the UI with the latest value
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+        updateSliderProgress(caloriesRemaining);
+    }
+
 
     @Override
     protected void onPause() {

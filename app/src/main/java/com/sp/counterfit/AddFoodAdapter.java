@@ -58,7 +58,8 @@ public class AddFoodAdapter extends RecyclerView.Adapter<AddFoodAdapter.FoodView
     public void onBindViewHolder(@NonNull FoodViewHolder holder, int position) {
         FoodItem foodItem = foodItemList.get(position);
         holder.foodName.setText(foodItem.getName());
-        holder.foodCalories.setText(String.format("%d Calories", foodItem.getCalories()));
+
+        holder.foodCalories.setText(String.format("%.0f Calories", foodItem.getCalories()));
 
         // Use Glide to load the food image. Consider adding a placeholder for better UX
         Glide.with(context)
