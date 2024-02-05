@@ -264,6 +264,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
 
 
+
     public void setCurrentSession(int userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(SESSION_TABLE_NAME, null, null); // Clear previous session
@@ -499,7 +500,59 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.delete(FOOD_TABLE_NAME, COLUMN_FOOD_ID + " = ?", new String[]{String.valueOf(foodItemId)});
         db.close();
     }
+    public void updateUserPassword(String userEmail, String newPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PASSWORD, newPassword); // Assuming you hash the password before storing
 
+        int rowsAffected = db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{userEmail});
+        Log.d("SignUpHelper", "Password update affected rows: " + rowsAffected);
+
+        db.close();
+    }
+    public List<HistoryItem.WeightEntry> getWeightEntries(String userEmail) {
+        List<HistoryItem.WeightEntry> weightEntries = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query("WeightTable", new String[]{"date", "weight"}, "userEmail=?", new String[]{userEmail}, null, null, "date DESC");
+
+        int dateColumnIndex = cursor.getColumnIndex("date");
+        int weightColumnIndex = cursor.getColumnIndex("weight");
+
+        while (cursor.moveToNext()) {
+            if (dateColumnIndex != -1 && weightColumnIndex != -1) {
+                long dateInMillis = cursor.getLong(dateColumnIndex);
+                double weight = cursor.getDouble(weightColumnIndex);
+                weightEntries.add(new History.WeightEntry(dateInMillis, weight));
+            }
+        }
+        cursor.close();
+        db.close();
+        return weightEntries;
+    }
+
+    public List<HistoryItem.MealEntry> getMealEntries(String userEmail) {
+        List<HistoryItem.MealEntry> mealEntries = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query("MealTable", new String[]{"name", "calories", "date"}, "userEmail=?", new String[]{userEmail}, null, null, "date DESC");
+
+        int nameColumnIndex = cursor.getColumnIndex("name");
+        int caloriesColumnIndex = cursor.getColumnIndex("calories");
+        int dateColumnIndex = cursor.getColumnIndex("date");
+
+        while (cursor.moveToNext()) {
+            if (nameColumnIndex != -1 && caloriesColumnIndex != -1 && dateColumnIndex != -1) {
+                String name = cursor.getString(nameColumnIndex);
+                int calories = cursor.getInt(caloriesColumnIndex);
+                String date = cursor.getString(dateColumnIndex);
+                mealEntries.add(new HistoryItem.MealEntry(name, calories, date));
+            }
+        }
+        cursor.close();
+        db.close();
+        return mealEntries;
+    }
 
 
 

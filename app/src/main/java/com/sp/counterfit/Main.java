@@ -350,6 +350,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (id == R.id.nav_logout) {
             Log.d("NavigationView", "Logout clicked");
             logoutUser();
+
         } else if (id == R.id.nav_home) {
 
         } else if (id == R.id.nav_about) {
@@ -370,10 +371,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             foodActivityResultLauncher.launch(intent);
             return true;
 
+        }else if (id== R.id.nav_settings){
+            Intent intent = new Intent(Main.this, Setting.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            return true;
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
         return true; // Indicate that the item click has been handled
+
     }
 
     private void setupBottomNavigationView() {
@@ -527,7 +534,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         double caloriesBurned = newSteps * 0.04;
         caloriesRemaining += caloriesBurned;
         updateSliderProgress(caloriesRemaining);
-        textRemainingCalories.setText(String.format(Locale.getDefault(), "%.0f Remaining", caloriesRemaining));    }
+        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+    }
     private int getInitialStepCount() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         return prefs.getInt("InitialStepCount", 0);
