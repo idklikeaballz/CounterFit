@@ -2,6 +2,7 @@ package com.sp.counterfit;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +29,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItemClickListener {
 
@@ -175,17 +178,16 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
     @Override
     public void onAddMealClick(FoodItem foodItem) {
         if (currentUserEmail != null) {
+            int userId = dbHelper.getCurrentUserId();
             int caloriesRemaining = dbHelper.getCaloriesRemaining(currentUserEmail);
-            // Round calories to the nearest integer
             int caloriesToAdd = Math.round((float) foodItem.getCalories());
             dbHelper.updateUserRemainingCalories(currentUserEmail, caloriesRemaining - caloriesToAdd);
-            Toast.makeText(this, "Calories updated!", Toast.LENGTH_SHORT).show();
 
-            // Prepare data intent for result
-            Intent data = new Intent();
-            data.putExtra("addedCalories", caloriesToAdd); // Pass the rounded value
-            setResult(RESULT_OK, data);
-            finish();
+            // Insert meal to meal history
+            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            dbHelper.insertMealHistory(userId, foodItem.getName(), caloriesToAdd, date);
+
+            Toast.makeText(this, "Meal added to diet and history!", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
         }

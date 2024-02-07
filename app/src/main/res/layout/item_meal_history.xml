@@ -1,31 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/mealNameTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Meal Name"
-        android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/caloriesTextView"
+        android:id="@+id/textViewMealName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Calories"
-        android:textSize="18sp" />
+        android:text="Chicken Rice"
+        android:textAppearance="?attr/textAppearanceSubtitle1"/>
 
     <TextView
-        android:id="@+id/dateTextView"
+        android:id="@+id/textViewCalories"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Date"
-        android:textSize="18sp" />
-</LinearLayout>
+        android:text="900 Calories"
+        android:layout_below="@id/textViewMealName"/>
+
+    <TextView
+        android:id="@+id/textViewDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="28/12/2023"
+        android:layout_below="@id/textViewCalories"/>
+</RelativeLayout>

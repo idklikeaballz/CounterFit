@@ -19,7 +19,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     public static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
@@ -38,6 +38,21 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_FOOD_CALORIES = "calories";
     private static final String COLUMN_FOOD_IMAGE_URI = "imageUri";
     private static final String COLUMN_FOOD_USER_ID = "userId"; // New column for linking food to a user
+    private static final String MEAL_HISTORY_TABLE_NAME = "MealHistory";
+    private static final String COLUMN_MEAL_HISTORY_ID = "id";
+    private static final String COLUMN_MEAL_HISTORY_FOOD_NAME = "foodName";
+    private static final String COLUMN_MEAL_HISTORY_CALORIES = "calories";
+    private static final String COLUMN_MEAL_HISTORY_DATE = "date";
+    private static final String COLUMN_MEAL_HISTORY_USER_ID = "userId"; // To link the meal to a specific user
+
+    private static final String CREATE_MEAL_HISTORY_TABLE = "CREATE TABLE " + MEAL_HISTORY_TABLE_NAME + "("
+            + COLUMN_MEAL_HISTORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_MEAL_HISTORY_FOOD_NAME + " TEXT,"
+            + COLUMN_MEAL_HISTORY_CALORIES + " INTEGER,"
+            + COLUMN_MEAL_HISTORY_DATE + " TEXT," // Storing date as TEXT in SQLite (you can format it as 'YYYY-MM-DD')
+            + COLUMN_MEAL_HISTORY_USER_ID + " INTEGER," // Link to user ID
+            + "FOREIGN KEY(" + COLUMN_MEAL_HISTORY_USER_ID + ") REFERENCES " + TABLE_NAME + "(" + COLUMN_ID + "))";
+
 
     private static final String CREATE_TIPS_TABLE = "CREATE TABLE " + TIPS_TABLE_NAME + "("
             + COLUMN_TIP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -79,8 +94,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_SESSION_TABLE);
-        db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
+        db.execSQL(CREATE_TIPS_TABLE);
         db.execSQL(CREATE_FOOD_TABLE);
+        // New table creation for meal history
+        db.execSQL(CREATE_MEAL_HISTORY_TABLE);
         insertInitialTips(db);
 
     }
@@ -88,13 +105,8 @@ public class SignUpHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
-        if (oldVersion < 7) {
-            // Only create the CurrentSession table if it doesn't exist
-            db.execSQL(CREATE_TABLE);
-            db.execSQL(CREATE_SESSION_TABLE);
-            db.execSQL(CREATE_TIPS_TABLE); // Create the tips table
-            db.execSQL(CREATE_FOOD_TABLE);
-
+        if (oldVersion < 8) { // Assuming your previous database version was 7
+            db.execSQL(CREATE_MEAL_HISTORY_TABLE);
         }
         // Add more conditions here for other database upgrades
     }
@@ -510,49 +522,45 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         db.close();
     }
-    public List<HistoryItem.WeightEntry> getWeightEntries(String userEmail) {
-        List<HistoryItem.WeightEntry> weightEntries = new ArrayList<>();
+    public long insertMealHistory(int userId, String foodName, int calories, String date) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_MEAL_HISTORY_FOOD_NAME, foodName);
+        values.put(COLUMN_MEAL_HISTORY_CALORIES, calories);
+        values.put(COLUMN_MEAL_HISTORY_DATE, date);
+        values.put(COLUMN_MEAL_HISTORY_USER_ID, userId);
+
+        long newRowId = db.insert(MEAL_HISTORY_TABLE_NAME, null, values);
+        db.close();
+
+        Log.d("SignUpHelper", "Inserted meal history with row ID: " + newRowId);
+        return newRowId;
+    }
+    public List<MealHistoryItem> getMealHistoryByUserId(int userId) {
+        List<MealHistoryItem> mealHistory = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(MEAL_HISTORY_TABLE_NAME,
+                new String[]{COLUMN_MEAL_HISTORY_FOOD_NAME, COLUMN_MEAL_HISTORY_CALORIES, COLUMN_MEAL_HISTORY_DATE},
+                COLUMN_MEAL_HISTORY_USER_ID + "=?",
+                new String[]{String.valueOf(userId)},
+                null, null, null);
 
-        Cursor cursor = db.query("WeightTable", new String[]{"date", "weight"}, "userEmail=?", new String[]{userEmail}, null, null, "date DESC");
-
-        int dateColumnIndex = cursor.getColumnIndex("date");
-        int weightColumnIndex = cursor.getColumnIndex("weight");
-
-        while (cursor.moveToNext()) {
-            if (dateColumnIndex != -1 && weightColumnIndex != -1) {
-                long dateInMillis = cursor.getLong(dateColumnIndex);
-                double weight = cursor.getDouble(weightColumnIndex);
-                weightEntries.add(new History.WeightEntry(dateInMillis, weight));
-            }
+        if (cursor.moveToFirst()) {
+            do {
+                String foodName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_FOOD_NAME));
+                int calories = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_CALORIES));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_DATE));
+                mealHistory.add(new MealHistoryItem(foodName, calories, date));
+            } while(cursor.moveToNext());
         }
         cursor.close();
         db.close();
-        return weightEntries;
+        Log.d("SignUpHelper", "Fetched " + mealHistory.size() + " meal history items for user ID: " + userId);
+        return mealHistory;
     }
 
-    public List<HistoryItem.MealEntry> getMealEntries(String userEmail) {
-        List<HistoryItem.MealEntry> mealEntries = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query("MealTable", new String[]{"name", "calories", "date"}, "userEmail=?", new String[]{userEmail}, null, null, "date DESC");
 
-        int nameColumnIndex = cursor.getColumnIndex("name");
-        int caloriesColumnIndex = cursor.getColumnIndex("calories");
-        int dateColumnIndex = cursor.getColumnIndex("date");
-
-        while (cursor.moveToNext()) {
-            if (nameColumnIndex != -1 && caloriesColumnIndex != -1 && dateColumnIndex != -1) {
-                String name = cursor.getString(nameColumnIndex);
-                int calories = cursor.getInt(caloriesColumnIndex);
-                String date = cursor.getString(dateColumnIndex);
-                mealEntries.add(new HistoryItem.MealEntry(name, calories, date));
-            }
-        }
-        cursor.close();
-        db.close();
-        return mealEntries;
-    }
 
 
 

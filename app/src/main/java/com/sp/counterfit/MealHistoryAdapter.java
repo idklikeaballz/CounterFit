@@ -9,43 +9,47 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-class MealHistoryAdapter extends RecyclerView.Adapter<MealHistoryAdapter.ViewHolder> {
-    private List<History.MealEntry> mealEntries;
+public class MealHistoryAdapter extends RecyclerView.Adapter<MealHistoryAdapter.ViewHolder> {
 
-    MealHistoryAdapter(List<History.MealEntry> mealEntries) {
-        this.mealEntries = mealEntries;
+    private List<MealHistoryItem> mealHistoryList;
+
+    public MealHistoryAdapter(List<MealHistoryItem> mealHistoryList) {
+        this.mealHistoryList = mealHistoryList;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_meal_history, parent, false);
-        return new ViewHolder(itemView);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_meal_history, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        History.MealEntry mealEntry = mealEntries.get(position);
-        holder.mealNameTextView.setText(mealEntry.getName());
-        holder.caloriesTextView.setText(String.valueOf(mealEntry.getCalories()));
-        holder.dateTextView.setText(mealEntry.getDate());
+        MealHistoryItem item = mealHistoryList.get(position);
+        holder.textViewMealName.setText(item.getFoodName());
+        holder.textViewCalories.setText(item.getCalories() + " Calories");
+        holder.textViewDate.setText(item.getDate());
     }
 
     @Override
     public int getItemCount() {
-        return mealEntries.size();
+        return mealHistoryList.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        TextView mealNameTextView;
-        TextView caloriesTextView;
-        TextView dateTextView;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textViewMealName, textViewCalories, textViewDate;
 
-        ViewHolder(View itemView) {
+        public ViewHolder(View itemView) { // Corrected the constructor name here
             super(itemView);
-            mealNameTextView = itemView.findViewById(R.id.mealNameTextView);
-            caloriesTextView = itemView.findViewById(R.id.caloriesTextView);
-            dateTextView = itemView.findViewById(R.id.dateTextView);
+            textViewMealName = itemView.findViewById(R.id.textViewMealName);
+            textViewCalories = itemView.findViewById(R.id.textViewCalories);
+            textViewDate = itemView.findViewById(R.id.textViewDate);
         }
+    }
+
+    // Method to update the list of meal history items and notify the adapter of the change.
+    public void updateMealHistoryList(List<MealHistoryItem> newMealHistoryList) {
+        mealHistoryList = newMealHistoryList;
+        notifyDataSetChanged();
     }
 }

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -14,11 +15,16 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Recommend extends AppCompatActivity implements MealAdapter.OnMealClickListener {
     private ViewPager2 healthyDietViewPager, bulkingDietViewPager;
     private BottomNavigationView bottomNavigationView;
+    private SignUpHelper dbHelper;
+
+
 
 
     @Override
@@ -31,6 +37,7 @@ public class Recommend extends AppCompatActivity implements MealAdapter.OnMealCl
         bulkingDietViewPager = findViewById(R.id.bulkingDietViewPager);
         bottomNavigationView = findViewById(R.id.bottom_navigation_recommend);
         setupBottomNavigationView();
+        dbHelper = new SignUpHelper(this);
 
         // Setup ViewPager2 with adapters
         setupViewPager(healthyDietViewPager, getHealthyDietMeals());
@@ -55,7 +62,12 @@ public class Recommend extends AppCompatActivity implements MealAdapter.OnMealCl
     }
 
     private void addMealToDiet(MealItem mealItem) {
+        int userId = dbHelper.getCurrentUserId();
         int calories = Integer.parseInt(mealItem.getCalorieCount().split(" ")[0]);
+
+        // Insert meal to meal history
+        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        dbHelper.insertMealHistory(userId, mealItem.getMealName(), calories, date);
 
         // Prepare data intent for result
         Intent data = new Intent();

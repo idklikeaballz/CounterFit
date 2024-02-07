@@ -40,7 +40,7 @@ public class Setting extends AppCompatActivity implements View.OnClickListener {
         if (v.getId() == R.id.Goals) {
             intent = new Intent(this, Home.class);
         } else if (v.getId() == R.id.History) {
-            intent = new Intent(this, Home.class);
+            intent = new Intent(this, History.class);
         } else if (v.getId() == R.id.Account) {
             intent = new Intent(this, Account.class);
         } else if (v.getId() == R.id.About) {
