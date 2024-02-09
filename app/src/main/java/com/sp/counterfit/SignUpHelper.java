@@ -17,6 +17,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TIP_TEXT = "text";
     private static final String COLUMN_PROFILE_IMAGE_URI = "profileImageUri"; // New column for image URI
 
+    private static final String COLUMN_START_DATE = "startDate"; // Add this line
 
     private static final String DATABASE_NAME = "UserDatabase";
     private static final int DATABASE_VERSION = 8;
@@ -71,9 +72,10 @@ public class SignUpHelper extends SQLiteOpenHelper {
             + COLUMN_HEIGHT + " REAL,"
             + COLUMN_EMAIL + " TEXT UNIQUE,"
             + COLUMN_PASSWORD + " TEXT,"
-            + COLUMN_WEIGHT_GOAL + " TEXT," // Added column for weight goal
-            + COLUMN_CALORIES_REMAINING + " INTEGER," // Added column for calories remaining
-            + COLUMN_PROFILE_IMAGE_URI + " TEXT" // New column for profile image URI
+            + COLUMN_WEIGHT_GOAL + " TEXT,"
+            + COLUMN_CALORIES_REMAINING + " INTEGER,"
+            + COLUMN_PROFILE_IMAGE_URI + " TEXT,"
+            + COLUMN_START_DATE + " TEXT" // Add this line
             + ")";
     private static String CREATE_FOOD_TABLE = "CREATE TABLE " + FOOD_TABLE_NAME + "("
             + COLUMN_FOOD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -632,15 +634,92 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return caloriesRemaining;
     }
+    public double fetchUserOriginalWeight(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double originalWeight = 0.0;
 
+        Cursor cursor = db.query(TABLE_NAME,
+                new String[]{COLUMN_WEIGHT},
+                COLUMN_ID + "=?",
+                new String[]{String.valueOf(userId)},
+                null, null, null);
 
+        if (cursor != null && cursor.moveToFirst()) {
+            originalWeight = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_WEIGHT));
+            cursor.close();
+        }
+        db.close();
+        return originalWeight;
+    }
+    public double fetchCaloriesPerWeekGoal(int userId) {
+        UserDetails userDetails = getUserDetailsById(userId);
+        if (userDetails == null) {
+            return 0; // Return 0 if user details are not found
+        }
 
+        double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+        double caloriesPerWeekGoal = 0;
 
+        switch (userDetails.weightGoal) {
+            case "Gain 0.2 kg per week":
+                caloriesPerWeekGoal = bmr + (7700 * 0.2) / 7; // 7700 calories to gain 1 kg, divided by 7 for daily surplus
+                break;
+            case "Gain 0.5 kg per week":
+                caloriesPerWeekGoal = bmr + (7700 * 0.5) / 7;
+                break;
+            case "Lose 0.2 kg per week":
+                caloriesPerWeekGoal = bmr - (7700 * 0.2) / 7;
+                break;
+            case "Lose 0.5 kg per week":
+                caloriesPerWeekGoal = bmr - (7700 * 0.5) / 7;
+                break;
+            case "Maintain Weight":
+            default:
+                caloriesPerWeekGoal = bmr; // No adjustment needed
+        }
 
+        return caloriesPerWeekGoal * 7; // Return the weekly calorie goal
+    }
+    public double calculateWeightChangeForWeek(int userId) {
 
+        double weeklyCalorieGoal = fetchCaloriesPerWeekGoal(userId);
 
+        double dailyBMR = calculateBMRForCurrentUser();
 
+        // Calculate the weekly BMR by multiplying daily BMR by 7
+        double weeklyBMR = dailyBMR * 7;
 
+        // Calculate the calorie surplus or deficit
+        double calorieDifference = weeklyCalorieGoal - weeklyBMR;
+
+        return calorieDifference / 7700;
+    }
+
+    public void updateUserStartDate(int userId, String startDate) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("StartDate", startDate); // Assuming you have a StartDate column in your UserDetails table
+        db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(userId)});
+        db.close();
+    }
+
+    public String fetchUserStartDate(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String startDate = null;
+
+        Cursor cursor = db.query(TABLE_NAME,
+                new String[]{COLUMN_START_DATE},
+                COLUMN_ID + "=?",
+                new String[]{String.valueOf(userId)},
+                null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            startDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_START_DATE));
+            cursor.close();
+        }
+        db.close();
+        return startDate;
+    }
 
 
 }

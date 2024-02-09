@@ -109,6 +109,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         displayRandomTip(); // Call this method to display a random tip
         retrieveAndDisplayUserBMR();
         setupActivityResultLaunchers();
+        startTracking();
 
 
 
@@ -529,6 +530,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         editor.putInt("InitialStepCount", stepCount);
         editor.apply();
     }
+    // Example method to call when user starts tracking their weight
+
 
     private void updateCaloriesWithSteps(int newSteps) {
         double caloriesBurned = newSteps * 0.04;
@@ -563,6 +566,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         if (stepCounterSensor != null) {
             sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+    public void startTracking() {
+        int userId = dbHelper.getCurrentUserId(); // Ensure this method correctly fetches the current user's ID
+        if (userId != -1) {
+            String startDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            dbHelper.updateUserStartDate(userId, startDate);
+        } else {
+            Log.e("Main", "User ID not found.");
         }
     }
     private void displayUpdatedCalories() {

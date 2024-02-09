@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/backgroundmain"
     tools:context=".History">
 
     <TextView
@@ -34,13 +35,14 @@
         android:layout_marginTop="16dp" />
 
     <!-- Navigation bar placeholder -->
-    <LinearLayout
-        android:id="@+id/linearLayoutNavBar"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_history"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#1E1E1E"
         android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="horizontal">
-        <!-- Add navigation buttons here -->
-    </LinearLayout>
+        app:itemIconTint="@color/bottom_nav_colors"
+        app:itemTextColor="@color/bottom_nav_colors"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 </RelativeLayout>
