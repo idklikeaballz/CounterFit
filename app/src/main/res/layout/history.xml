@@ -3,16 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FAFAFA"
     tools:context=".History">
 
     <TextView
         android:id="@+id/textViewHistory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="History"
-        android:textAppearance="?attr/textAppearanceHeadline6"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:text="Weight"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="#212121" />
 
     <!-- Placeholder for weight graph -->
     <com.github.mikephil.charting.charts.LineChart
@@ -20,7 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="198dp"
         android:layout_below="@id/textViewHistory"
-        android:layout_marginTop="18dp" />
+        android:layout_marginTop="18dp"
+        android:background="#ECEFF1" />
 
     <!-- RecyclerView for meal history -->
     <androidx.recyclerview.widget.RecyclerView
@@ -28,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/chart"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp" />
 
     <!-- Navigation bar placeholder -->
     <LinearLayout
@@ -36,8 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
         <!-- Add navigation buttons here -->
     </LinearLayout>
 </RelativeLayout>

@@ -6,12 +6,16 @@ public class MealHistoryItem implements Serializable {
     private String foodName;
     private int calories;
     private String date; // Assuming the date is stored as a String
-
+    private int id; // Assuming there's an ID field
     // Constructor
-    public MealHistoryItem(String foodName, int calories, String date) {
+    public MealHistoryItem(int id, String foodName, int calories, String date) {
+        this.id = id; // Assign id
         this.foodName = foodName;
         this.calories = calories;
         this.date = date;
+    }
+    public int getId() {
+        return id;
     }
 
     // Getters

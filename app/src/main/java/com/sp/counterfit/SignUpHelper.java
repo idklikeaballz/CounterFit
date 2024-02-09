@@ -538,26 +538,104 @@ public class SignUpHelper extends SQLiteOpenHelper {
     }
     public List<MealHistoryItem> getMealHistoryByUserId(int userId) {
         List<MealHistoryItem> mealHistory = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase(); // Correctly obtaining a reference to the database
         Cursor cursor = db.query(MEAL_HISTORY_TABLE_NAME,
-                new String[]{COLUMN_MEAL_HISTORY_FOOD_NAME, COLUMN_MEAL_HISTORY_CALORIES, COLUMN_MEAL_HISTORY_DATE},
+                new String[]{COLUMN_MEAL_HISTORY_ID, COLUMN_MEAL_HISTORY_FOOD_NAME, COLUMN_MEAL_HISTORY_CALORIES, COLUMN_MEAL_HISTORY_DATE},
                 COLUMN_MEAL_HISTORY_USER_ID + "=?",
                 new String[]{String.valueOf(userId)},
                 null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_ID));
                 String foodName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_FOOD_NAME));
                 int calories = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_CALORIES));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_DATE));
-                mealHistory.add(new MealHistoryItem(foodName, calories, date));
+                MealHistoryItem item = new MealHistoryItem(id, foodName, calories, date); // Correctly creating a MealHistoryItem instance
+                mealHistory.add(item);
             } while(cursor.moveToNext());
         }
         cursor.close();
-        db.close();
-        Log.d("SignUpHelper", "Fetched " + mealHistory.size() + " meal history items for user ID: " + userId);
+        db.close(); // Close the database connection here
         return mealHistory;
     }
+
+    public boolean removeMeal(int userId, int mealId) {
+        Log.d("SignUpHelper", "Attempting to remove meal with ID: " + mealId + " for user ID: " + userId);
+        SQLiteDatabase db = this.getWritableDatabase();
+        int mealCalories = 0;
+
+        Cursor calorieCursor = db.query(MEAL_HISTORY_TABLE_NAME,
+                new String[]{COLUMN_MEAL_HISTORY_CALORIES},
+                COLUMN_MEAL_HISTORY_ID + "=? AND " + COLUMN_MEAL_HISTORY_USER_ID + "=?",
+                new String[]{String.valueOf(mealId), String.valueOf(userId)},
+                null, null, null);
+
+        if (calorieCursor.moveToFirst()) {
+            mealCalories = calorieCursor.getInt(calorieCursor.getColumnIndexOrThrow(COLUMN_MEAL_HISTORY_CALORIES));
+            Log.d("DebugRemoveMeal", "Meal calories for removal: " + mealCalories);
+        } else {
+            Log.d("DebugRemoveMeal", "Failed to find meal for ID: " + mealId);
+        }
+
+        calorieCursor.close();
+
+
+
+        int deletedRows = db.delete(MEAL_HISTORY_TABLE_NAME, COLUMN_MEAL_HISTORY_ID + "=? AND " + COLUMN_MEAL_HISTORY_USER_ID + "=?", new String[]{String.valueOf(mealId), String.valueOf(userId)});
+        Log.d("DebugRemoveMeal", "Number of rows deleted: " + deletedRows);
+
+
+
+        if (deletedRows > 0) {
+            updateUserRemainingCaloriesAfterMealRemoval(userId, mealCalories);
+            db.close();
+            return true;
+        } else {
+            db.close();
+            return false;
+        }
+    }
+
+
+
+
+
+
+    private void updateUserRemainingCaloriesAfterMealRemoval(int userId, int mealCalories) {
+        // Fetch current calories, add back the meal calories, and update
+        int currentCalories = getCaloriesRemainingByUserId(userId);
+        int updatedCalories = currentCalories + mealCalories;
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CALORIES_REMAINING, updatedCalories);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{String.valueOf(userId)});
+        Log.d("DebugRemoveMeal", "Updated calories remaining for user ID: " + userId);
+        db.close();
+    }
+
+    public int getCaloriesRemainingByUserId(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME,
+                new String[]{COLUMN_CALORIES_REMAINING},
+                COLUMN_ID + "=?",
+                new String[]{String.valueOf(userId)},
+                null, null, null);
+
+        int caloriesRemaining = 0;
+        if (cursor.moveToFirst()) {
+            caloriesRemaining = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return caloriesRemaining;
+    }
+
+
+
+
 
 
 

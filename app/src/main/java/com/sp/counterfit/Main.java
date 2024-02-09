@@ -566,13 +566,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
     private void displayUpdatedCalories() {
-        // Fetch the latest calories remaining value
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        caloriesRemaining = prefs.getInt("CaloriesRemaining", 0); // Default to 0 if not found
-
-        // Update the UI with the latest value
-        textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
-        updateSliderProgress(caloriesRemaining);
+        // Assume getUserDetailsByEmail is a method that fetches the current user's details
+        SignUpHelper.UserDetails userDetails = dbHelper.getUserDetailsByEmail(currentUserEmail);
+        if (userDetails != null) {
+            caloriesRemaining = userDetails.caloriesRemaining;
+            textRemainingCalories.setText(String.format(Locale.getDefault(), "%d Remaining", caloriesRemaining));
+            updateSliderProgress(caloriesRemaining);
+        }
     }
 
 
