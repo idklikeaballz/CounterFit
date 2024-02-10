@@ -40,6 +40,12 @@ public class Account extends AppCompatActivity {
                 updateUserDetails();
             }
         });
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+            actionBar.setCustomView(R.layout.action_bar_account);
+            actionBar.setBackgroundDrawable(getResources().getDrawable(R.color.headerbg));
+        }
     }
 
     private void displayCurrentUserDetails() {

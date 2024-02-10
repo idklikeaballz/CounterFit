@@ -38,7 +38,7 @@ public class Setting extends AppCompatActivity implements View.OnClickListener {
 
         // Determine which TextView was clicked and create the corresponding Intent
         if (v.getId() == R.id.Goals) {
-            intent = new Intent(this, Home.class);
+            intent = new Intent(this, UpdateGoal.class);
         } else if (v.getId() == R.id.History) {
             intent = new Intent(this, History.class);
         } else if (v.getId() == R.id.Account) {
