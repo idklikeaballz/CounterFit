@@ -11,7 +11,9 @@
         android:id="@+id/search_food"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="Search for food" />
+        android:queryHint="Search for food"
+        android:background="@drawable/search_view_background"
+        style="@style/CustomSearchView" />
 
     <!-- Button to add a new meal -->
 
@@ -25,7 +27,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="120dp"
-        android:layout_marginTop="-4dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="120dp"
         android:background="@drawable/food_button"
         android:drawableTop="@drawable/plate"
@@ -33,23 +35,26 @@
         android:padding="10dp"
         android:text="New Meal"
         android:textColor="#FFFFFF" />
+
+    <!-- BottomNavigationView for navigation -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/bottom_navigation_food"
         android:layout_below="@+id/search_food"
-        android:layout_above="@+id/bottom_navigation_food">
+        android:layout_marginTop="13dp"
+        android:layout_marginBottom="-13dp">
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView_food"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btn_new_meal"
-        android:layout_marginTop="0dp" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView_food"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_new_meal"
+            android:layout_marginTop="0dp" />
 
     </ScrollView>
 
-    <!-- BottomNavigationView for navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_food"
         android:layout_width="match_parent"
