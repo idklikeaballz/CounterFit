@@ -39,7 +39,7 @@
         android:id="@+id/bottom_navigation_history"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1E1E1E"
+        android:background="#263238"
         android:layout_alignParentBottom="true"
         app:itemIconTint="@color/bottom_nav_colors"
         app:itemTextColor="@color/bottom_nav_colors"
