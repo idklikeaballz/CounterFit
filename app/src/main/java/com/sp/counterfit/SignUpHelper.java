@@ -20,7 +20,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_START_DATE = "startDate"; // Add this line
 
     private static final String DATABASE_NAME = "UserDatabase";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     public static final String TABLE_NAME = "UserDetails";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_GENDER = "gender";
@@ -45,6 +45,19 @@ public class SignUpHelper extends SQLiteOpenHelper {
     private static final String COLUMN_MEAL_HISTORY_CALORIES = "calories";
     private static final String COLUMN_MEAL_HISTORY_DATE = "date";
     private static final String COLUMN_MEAL_HISTORY_USER_ID = "userId"; // To link the meal to a specific user
+    private static final String ACTIVITIES_TABLE_NAME = "Activities";
+    private static final String COLUMN_ACTIVITY_ID = "id";
+    private static final String COLUMN_ACTIVITY_DATE = "date";
+    private static final String COLUMN_ACTIVITY_CALORIES_BURNED = "caloriesBurned";
+    private static final String COLUMN_ACTIVITY_USER_ID = "userId";
+
+    private static final String CREATE_ACTIVITIES_TABLE = "CREATE TABLE " + ACTIVITIES_TABLE_NAME + "("
+            + COLUMN_ACTIVITY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_ACTIVITY_DATE + " TEXT,"
+            + COLUMN_ACTIVITY_CALORIES_BURNED + " INTEGER,"
+            + COLUMN_ACTIVITY_USER_ID + " INTEGER,"
+            + "FOREIGN KEY(" + COLUMN_ACTIVITY_USER_ID + ") REFERENCES " + TABLE_NAME + "(" + COLUMN_ID + "))";
+
 
     private static final String CREATE_MEAL_HISTORY_TABLE = "CREATE TABLE " + MEAL_HISTORY_TABLE_NAME + "("
             + COLUMN_MEAL_HISTORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -100,17 +113,17 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_FOOD_TABLE);
         // New table creation for meal history
         db.execSQL(CREATE_MEAL_HISTORY_TABLE);
+        db.execSQL(CREATE_ACTIVITIES_TABLE);
         insertInitialTips(db);
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Check if we are upgrading from a version prior to the introduction of the CurrentSession table
-        if (oldVersion < 8) { // Assuming your previous database version was 7
-            db.execSQL(CREATE_MEAL_HISTORY_TABLE);
+        // Existing upgrade logic
+        if (oldVersion < 9) { // Assuming the new version that includes activities table is 9
+            db.execSQL(CREATE_ACTIVITIES_TABLE);
         }
-        // Add more conditions here for other database upgrades
     }
     public long insertFoodItem(int userId, String name, int calories, String imageUri) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -720,6 +733,91 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return startDate;
     }
+    public void updateUserWeightGoal(String email, String weightGoal) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_WEIGHT_GOAL, weightGoal);
+
+        int rowsAffected = db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{email});
+        if (rowsAffected > 0) {
+            Log.d("Database", "User goal updated.");
+        } else {
+            Log.e("Database", "Failed to update user goal.");
+        }
+
+        db.close();
+    }
+    public double calculateCaloriesBasedOnGoal(String weightGoal, String userEmail) {
+        UserDetails userDetails = getUserDetailsByEmail(userEmail);
+        if (userDetails == null) {
+            Log.e("SignUpHelper", "User details not found for email: " + userEmail);
+            return 0;
+        }
+
+        double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+        return adjustBMRBasedOnWeightGoal(bmr, weightGoal);
+    }
+    private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
+        switch (weightGoal) {
+            case "Gain 0.2 kg per week":
+                return bmr + 200;
+            case "Gain 0.5 kg per week":
+                return bmr + 500;
+            case "Maintain Weight":
+                return bmr;
+            case "Lose 0.2 kg per week":
+                return bmr - 200;
+            case "Lose 0.5 kg per week":
+                return bmr - 500;
+            default:
+                return bmr; // Default case if the weight goal is not recognized
+
+        }
+    }
+    public int getCaloriesConsumedToday() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int totalCalories = 0;
+
+        // Format today's date as YYYY-MM-DD
+        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+
+        // Query to sum up calories for today
+        String query = "SELECT SUM(" + COLUMN_MEAL_HISTORY_CALORIES + ") AS totalCalories FROM " + MEAL_HISTORY_TABLE_NAME + " WHERE " + COLUMN_MEAL_HISTORY_DATE + " =? AND " + COLUMN_MEAL_HISTORY_USER_ID + " =?";
+        Cursor cursor = db.rawQuery(query, new String[]{today, String.valueOf(getCurrentUserId())});
+
+        if (cursor.moveToFirst()) {
+            totalCalories = cursor.getInt(cursor.getColumnIndexOrThrow("totalCalories"));
+        }
+        cursor.close();
+        db.close();
+        return totalCalories;
+    }
+    public int getCaloriesBurnedToday() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int totalCaloriesBurned = 0;
+        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+
+        String query = "SELECT SUM(" + COLUMN_ACTIVITY_CALORIES_BURNED + ") AS totalCaloriesBurned FROM "
+                + ACTIVITIES_TABLE_NAME
+                + " WHERE " + COLUMN_ACTIVITY_DATE + " =? AND " + COLUMN_ACTIVITY_USER_ID + " =?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{today, String.valueOf(getCurrentUserId())});
+
+        int columnIndex = cursor.getColumnIndex("totalCaloriesBurned");
+        if (columnIndex != -1 && cursor.moveToFirst()) {
+            totalCaloriesBurned = cursor.getInt(columnIndex);
+        } else {
+            Log.e("SignUpHelper", "Column 'totalCaloriesBurned' not found.");
+        }
+        cursor.close();
+        db.close();
+        return totalCaloriesBurned;
+    }
+
+
+
+
+
 
 
 }

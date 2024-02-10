@@ -33,7 +33,7 @@
         android:id="@+id/bottom_navigation_gym"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#1E1E1E"
+        android:background="#263238"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
