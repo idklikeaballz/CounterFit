@@ -6,6 +6,8 @@ public class MealHistoryItem implements Serializable {
     private String foodName;
     private int calories;
     private String date; // Assuming the date is stored as a String
+    private float weight;
+
     private int id; // Assuming there's an ID field
     // Constructor
     public MealHistoryItem(int id, String foodName, int calories, String date) {
@@ -30,6 +32,7 @@ public class MealHistoryItem implements Serializable {
     public String getDate() {
         return date;
     }
+
 
     // Setters
     public void setFoodName(String foodName) {

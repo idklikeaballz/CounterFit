@@ -249,4 +249,3 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
 
 
 }
-

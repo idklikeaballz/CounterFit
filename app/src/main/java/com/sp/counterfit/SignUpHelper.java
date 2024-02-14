@@ -1,10 +1,7 @@
 package com.sp.counterfit;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -736,35 +733,6 @@ public class SignUpHelper extends SQLiteOpenHelper {
         db.close();
         return startDate;
     }
-    public void updateUserWeightGoal(String email, String weightGoal) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_WEIGHT_GOAL, weightGoal);
-
-        int rowsAffected = db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{email});
-        if (rowsAffected > 0) {
-            Log.d("Database", "User goal updated.");
-        } else {
-            Log.e("Database", "Failed to update user goal.");
-        }
-
-        db.close();
-    }
-    public void updateUserWeightGoalAndCalories(String email, String newWeightGoal, int newCalorieNeed) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_WEIGHT_GOAL, newWeightGoal);
-        values.put(COLUMN_CALORIES_REMAINING, newCalorieNeed);
-
-        int rowsAffected = db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{email});
-        if (rowsAffected > 0) {
-            Log.d("SignUpHelper", "User weight goal and calories updated successfully.");
-        } else {
-            Log.e("SignUpHelper", "Failed to update user weight goal and calories.");
-        }
-
-        db.close();
-    }
 
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
@@ -783,13 +751,45 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         }
     }
+    public void updateGoalAndCalories(String email, String newGoal) {
+        UserDetails userDetails = getUserDetailsByEmail(email);
+        if (userDetails != null) {
+            double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+            double oldAdjustedCalories = adjustCaloriesBasedOnGoal(bmr, userDetails.weightGoal);
+            double newAdjustedCalories = adjustCaloriesBasedOnGoal(bmr, newGoal);
+
+            // Calculate the difference between the new and old daily calorie targets
+            double dailyCalorieDifference = newAdjustedCalories - oldAdjustedCalories;
+
+            // Adjust the current calories remaining with the difference
+            int newCaloriesRemaining = userDetails.caloriesRemaining + (int) dailyCalorieDifference;
+
+            // Update the database with the new goal and adjusted calories remaining
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_WEIGHT_GOAL, newGoal);
+            values.put(COLUMN_CALORIES_REMAINING, newCaloriesRemaining);
+            db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{email});
+            db.close();
+        }
+    }
 
 
-
-
-
-
-
+    private double adjustCaloriesBasedOnGoal(double bmr, String goal) {
+        switch (goal) {
+            case "Gain 0.2 kg per week":
+                return bmr + 200;
+            case "Gain 0.5 kg per week":
+                return bmr + 500;
+            case "Lose 0.2 kg per week":
+                return bmr - 200;
+            case "Lose 0.5 kg per week":
+                return bmr - 500;
+            case "Maintain Weight":
+            default:
+                return bmr;
+        }
+    }
 
 
 }

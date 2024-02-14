@@ -69,7 +69,9 @@ public class UpdateGoal extends AppCompatActivity {
                 String selectedGoal = goals[selectedPosition];
                 String currentUserEmail = dbHelper.getCurrentUserEmail();
                 if (currentUserEmail != null) {
-                    dbHelper.updateUserWeightGoal(currentUserEmail, selectedGoal);
+                    // Update the user's goal and recalculated calories
+                    dbHelper.updateGoalAndCalories(currentUserEmail, selectedGoal);
+
                     Intent returnIntent = new Intent();
                     setResult(RESULT_OK, returnIntent);
                     finish();
