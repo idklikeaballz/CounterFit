@@ -5,64 +5,57 @@
     android:background="@color/backgroundmain"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
     <!-- SearchView for searching food -->
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/search_food"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:queryHint="Search for food"
-        android:background="@drawable/search_view_background"
-        style="@style/CustomSearchView" />
+<androidx.appcompat.widget.SearchView
+    android:id="@+id/search_food"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:queryHint="Search for food"
+    android:background="@drawable/search_view_background"
+    android:theme="@style/CustomSearchView"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Button to add a new meal -->
+<androidx.appcompat.widget.AppCompatButton
+    android:id="@+id/btn_new_meal"
+    android:layout_width="170dp"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/search_food"
+    android:layout_centerInParent="true"
+    android:background="@drawable/food_button"
+    android:drawableTop="@drawable/plate"
+    android:gravity="center"
+    android:padding="10dp"
+    android:text="New Meal"
+    android:textColor="#FFFFFF" />
 
-    <!-- RecyclerView to display the list of meals -->
+    <!-- ScrollView for RecyclerView -->
+<ScrollView
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_above="@+id/bottom_navigation_food"
+android:layout_below="@+id/btn_new_meal"
+android:layout_marginTop="13dp"
+android:layout_marginBottom="-13dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_new_meal"
-        android:layout_width="170dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/search_food"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="120dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="120dp"
-        android:background="@drawable/food_button"
-        android:drawableTop="@drawable/plate"
-        android:gravity="center"
-        android:padding="10dp"
-        android:text="New Meal"
-        android:textColor="#FFFFFF" />
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recyclerView_food"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
+
+</ScrollView>
 
     <!-- BottomNavigationView for navigation -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/bottom_navigation_food"
-        android:layout_below="@+id/search_food"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="-13dp">
+<com.google.android.material.bottomnavigation.BottomNavigationView
+    android:id="@+id/bottom_navigation_food"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:background="@color/headerbg"
+    app:itemIconTint="@color/bottom_nav_colors"
+    app:itemTextColor="@color/bottom_nav_colors"
+    app:menu="@menu/bottom_nav_menu" />
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView_food"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/btn_new_meal"
-            android:layout_marginTop="0dp" />
-
-    </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation_food"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="#263238"
-        app:itemIconTint="@color/bottom_nav_colors"
-        app:itemTextColor="@color/bottom_nav_colors"
-        app:menu="@menu/bottom_nav_menu" />
-
-</RelativeLayout>
+    </RelativeLayout>

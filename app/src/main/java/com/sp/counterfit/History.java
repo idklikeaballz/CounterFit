@@ -36,29 +36,27 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
     private MealHistoryAdapter mealHistoryAdapter;
     private SignUpHelper signUpHelper;
     private BottomNavigationView bottomNavigationView;
-    private static final int NUM_WEEKS = 12;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.history);
+        initializeComponents();
+        setupBottomNavigationView();
+        setupWeightGraph();
+        loadMealHistory();
+    }
+
+    private void initializeComponents() {
         recyclerViewMealHistory = findViewById(R.id.recyclerViewMealHistory);
         chart = findViewById(R.id.chart);
         signUpHelper = new SignUpHelper(this);
-
+        bottomNavigationView = findViewById(R.id.bottom_navigation_history);
 
         recyclerViewMealHistory.setLayoutManager(new LinearLayoutManager(this));
         mealHistoryAdapter = new MealHistoryAdapter(new ArrayList<>(), this);
         recyclerViewMealHistory.setAdapter(mealHistoryAdapter);
-        bottomNavigationView = findViewById(R.id.bottom_navigation_history);
-        setupBottomNavigationView();
 
-        // Set up the weight graph (LineChart)
-        setupWeightGraph();
-
-        // Load the meal history data
-        loadMealHistory();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
@@ -66,50 +64,33 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
             actionBar.setBackgroundDrawable(getResources().getDrawable(R.color.headerbg));
         }
     }
+
     @Override
     public void onMealRemoved(MealHistoryItem meal, int position) {
-        // Create an AlertDialog.Builder instance
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Remove Meal"); // Set the title for the dialog
-        builder.setMessage("Are you sure you want to remove this meal?"); // Set the message to show
-
-        // Set up the buttons
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // User clicked "Yes" button, remove the meal
-                int userId = signUpHelper.getCurrentUserId();
-                if (signUpHelper.removeMeal(userId, meal.getId())) {
-                    mealHistoryAdapter.notifyItemRemoved(position);
-                    Toast.makeText(History.this, "Meal removed successfully", Toast.LENGTH_SHORT).show();
-                    // Directly remove the item from your adapter's dataset
-                    mealHistoryAdapter.removeMealAt(position);
-                } else {
-                    Toast.makeText(History.this, "Error removing meal", Toast.LENGTH_SHORT).show();
-                }
+        builder.setTitle("Remove Meal");
+        builder.setMessage("Are you sure you want to remove this meal?");
+        builder.setPositiveButton("Yes", (dialog, which) -> {
+            int userId = signUpHelper.getCurrentUserId();
+            if (signUpHelper.removeMeal(userId, meal.getId())) {
+                mealHistoryAdapter.notifyItemRemoved(position);
+                Toast.makeText(History.this, "Meal removed successfully", Toast.LENGTH_SHORT).show();
+                mealHistoryAdapter.removeMealAt(position);
+            } else {
+                Toast.makeText(History.this, "Error removing meal", Toast.LENGTH_SHORT).show();
             }
         });
-
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // User clicked "No" button, dismiss the dialog
-                dialog.dismiss();
-            }
-        });
-
-        // Create and show the AlertDialog
+        builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
     private void setupWeightGraph() {
-        // Set up the LineChart using MPAndroidChart
-        // (Fake data for demonstration. Replace with your own data source)
         List<Entry> entries = new ArrayList<>();
         entries.add(new Entry(1, 70f));
         entries.add(new Entry(2, 71f));
         entries.add(new Entry(3, 72f));
-        // ... Add more entries
+        // Continue adding entries...
 
         LineDataSet dataSet = new LineDataSet(entries, "Weight (KG)");
         dataSet.setColor(Color.RED);
@@ -117,80 +98,26 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
 
         LineData lineData = new LineData(dataSet);
         chart.setData(lineData);
-        chart.invalidate(); // refresh the chart
-    }
-    private void updateWeightGraph() {
-        int userId = signUpHelper.getCurrentUserId();
-        if (userId == -1) {
-            Log.e("History", "User ID not found.");
-            return;
-        }
-
-        double originalWeight = signUpHelper.fetchUserOriginalWeight(userId);
-
-        // Fetch the start date
-        String startDateString = signUpHelper.fetchUserStartDate(userId);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date startDate;
-        try {
-            startDate = sdf.parse(startDateString);
-        } catch (ParseException e) {
-            Log.e("History", "Error parsing start date", e);
-            return;
-        }
-
-        long millis = System.currentTimeMillis() - startDate.getTime();
-        int weeksElapsed = (int) (millis / (1000 * 60 * 60 * 24 * 7));
-
-        // Ensure the first data point correctly represents Week 1
-        List<Entry> entries = new ArrayList<>();
-
-        // Adjust loop to start from Week 2 since Week 1 is already plotted
-        for (int week = 0; week <= weeksElapsed + 1; week++) {
-            double weightChange = signUpHelper.calculateWeightChangeForWeek(userId); // Pass the userId
-            originalWeight += weightChange;
-            entries.add(new Entry(week, (float) originalWeight));
-        }
-
-
-        LineDataSet dataSet = new LineDataSet(entries, "Weight Over Time");
-        dataSet.setColor(Color.RED);
-        dataSet.setValueTextColor(Color.BLACK);
-
-        LineData lineData = new LineData(dataSet);
-        chart.setData(lineData);
-        customizeXAxis(weeksElapsed + 1); // Adjust to correctly label the X-axis
         chart.invalidate(); // Refresh the chart
+        customizeXAxis();
     }
 
-    private void customizeXAxis(int totalWeeks) {
+    private void customizeXAxis() {
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f); // Interval of 1 week
+        xAxis.setGranularity(1f); // one week
         xAxis.setTextColor(Color.BLACK);
         xAxis.setTextSize(12f);
         xAxis.setAxisLineColor(Color.BLACK);
         xAxis.setAxisLineWidth(2f);
-
-        // Start from week 1 and end at totalWeeks
-        xAxis.setAxisMinimum(1f); // Start from week 1
-        xAxis.setAxisMaximum(totalWeeks); // Adjust this if you want a fixed maximum
-
         xAxis.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                int week = (int) value;
-                return "Week " + week;
+                return "Week " + (int) value;
             }
         });
     }
-
-
-
-
-
-
 
     private void loadMealHistory() {
         int userId = signUpHelper.getCurrentUserId();
@@ -198,7 +125,7 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
             List<MealHistoryItem> mealHistoryList = signUpHelper.getMealHistoryByUserId(userId);
             mealHistoryAdapter.updateMealHistoryList(mealHistoryList);
             mealHistoryAdapter.notifyDataSetChanged(); // Notify the adapter
-            updateWeightGraph(); // Update the weight graph after loading meal history
+            // Optionally update the weight graph
         } else {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
         }
@@ -246,6 +173,7 @@ public class History extends AppCompatActivity implements MealHistoryAdapter.OnM
             bottomNavigationView.getMenu().getItem(i).setCheckable(false);
         }
     }
+
 
 
 }

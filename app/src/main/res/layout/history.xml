@@ -15,18 +15,16 @@
         android:layout_marginTop="16dp"
         android:text="Weight"
         android:textAppearance="?attr/textAppearanceHeadline6"
-        android:textColor="#212121" />
+        android:textColor="@color/textColorPrimary" />
 
-    <!-- Placeholder for weight graph -->
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart"
         android:layout_width="match_parent"
-        android:layout_height="198dp"
+        android:layout_height="200dp"
         android:layout_below="@id/textViewHistory"
-        android:layout_marginTop="18dp"
-        android:background="#ECEFF1" />
+        android:layout_marginTop="24dp"
+        android:background="@color/chartBackground" />
 
-    <!-- RecyclerView for meal history -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewMealHistory"
         android:layout_width="match_parent"
@@ -34,12 +32,11 @@
         android:layout_below="@id/chart"
         android:layout_marginTop="16dp" />
 
-    <!-- Navigation bar placeholder -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_history"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#263238"
+        android:background="@color/headerbg"
         android:layout_alignParentBottom="true"
         app:itemIconTint="@color/bottom_nav_colors"
         app:itemTextColor="@color/bottom_nav_colors"

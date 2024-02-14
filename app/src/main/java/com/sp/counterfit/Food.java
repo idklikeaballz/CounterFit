@@ -103,6 +103,8 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         setupBottomNavigationView();
 
         dbHelper = new SignUpHelper(this);
+
+        // Correctly initialize the recyclerView only once
         recyclerView = findViewById(R.id.recyclerView_food);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -113,13 +115,14 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
         });
 
         currentUserEmail = dbHelper.getCurrentUserEmail();
-        recyclerView = findViewById(R.id.recyclerView_food);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Correctly initializing the class field `searchView`
+        searchView = findViewById(R.id.search_food); // This line was corrected
 
         loadFoodItems(); // Load food items initially
         setupActionBar();
-        searchView = findViewById(R.id.search_food);
     }
+
 
     private void setupBottomNavigationView() {
         if (bottomNavigationView != null) {
@@ -164,6 +167,7 @@ public class Food extends AppCompatActivity implements AddFoodAdapter.OnFoodItem
 
         loadFoodItems();
     }
+
 
     @Override
     public void onUpdateMealClick(FoodItem foodItem) {

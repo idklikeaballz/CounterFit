@@ -1,7 +1,10 @@
 package com.sp.counterfit;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -747,16 +750,22 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         db.close();
     }
-    public double calculateCaloriesBasedOnGoal(String weightGoal, String userEmail) {
-        UserDetails userDetails = getUserDetailsByEmail(userEmail);
-        if (userDetails == null) {
-            Log.e("SignUpHelper", "User details not found for email: " + userEmail);
-            return 0;
+    public void updateUserWeightGoalAndCalories(String email, String newWeightGoal, int newCalorieNeed) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_WEIGHT_GOAL, newWeightGoal);
+        values.put(COLUMN_CALORIES_REMAINING, newCalorieNeed);
+
+        int rowsAffected = db.update(TABLE_NAME, values, COLUMN_EMAIL + "=?", new String[]{email});
+        if (rowsAffected > 0) {
+            Log.d("SignUpHelper", "User weight goal and calories updated successfully.");
+        } else {
+            Log.e("SignUpHelper", "Failed to update user weight goal and calories.");
         }
 
-        double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
-        return adjustBMRBasedOnWeightGoal(bmr, weightGoal);
+        db.close();
     }
+
     private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
         switch (weightGoal) {
             case "Gain 0.2 kg per week":
@@ -774,45 +783,8 @@ public class SignUpHelper extends SQLiteOpenHelper {
 
         }
     }
-    public int getCaloriesConsumedToday() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        int totalCalories = 0;
 
-        // Format today's date as YYYY-MM-DD
-        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
 
-        // Query to sum up calories for today
-        String query = "SELECT SUM(" + COLUMN_MEAL_HISTORY_CALORIES + ") AS totalCalories FROM " + MEAL_HISTORY_TABLE_NAME + " WHERE " + COLUMN_MEAL_HISTORY_DATE + " =? AND " + COLUMN_MEAL_HISTORY_USER_ID + " =?";
-        Cursor cursor = db.rawQuery(query, new String[]{today, String.valueOf(getCurrentUserId())});
-
-        if (cursor.moveToFirst()) {
-            totalCalories = cursor.getInt(cursor.getColumnIndexOrThrow("totalCalories"));
-        }
-        cursor.close();
-        db.close();
-        return totalCalories;
-    }
-    public int getCaloriesBurnedToday() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        int totalCaloriesBurned = 0;
-        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
-
-        String query = "SELECT SUM(" + COLUMN_ACTIVITY_CALORIES_BURNED + ") AS totalCaloriesBurned FROM "
-                + ACTIVITIES_TABLE_NAME
-                + " WHERE " + COLUMN_ACTIVITY_DATE + " =? AND " + COLUMN_ACTIVITY_USER_ID + " =?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{today, String.valueOf(getCurrentUserId())});
-
-        int columnIndex = cursor.getColumnIndex("totalCaloriesBurned");
-        if (columnIndex != -1 && cursor.moveToFirst()) {
-            totalCaloriesBurned = cursor.getInt(columnIndex);
-        } else {
-            Log.e("SignUpHelper", "Column 'totalCaloriesBurned' not found.");
-        }
-        cursor.close();
-        db.close();
-        return totalCaloriesBurned;
-    }
 
 
 

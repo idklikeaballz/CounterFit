@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/backgroundmain"
     android:padding="16dp">
 
@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="4dp"
-        app:boxStrokeColor="#858C94"
+        app:boxStrokeColor="@color/colorAccent"
         app:boxStrokeWidth="2dp"
         app:boxBackgroundColor="@android:color/transparent"
         app:boxCornerRadiusTopStart="8dp"
@@ -22,18 +22,18 @@
         app:hintAnimationEnabled="true"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/meal"
-            android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:hint="Name"
-            android:inputType="text"
-            android:padding="8dp"
-            android:textColor="#A2D9FF"
-            android:textColorHint="#858C94" />
-    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/meal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name"
+        android:inputType="text"
+        android:padding="8dp"
+        android:textColor="@color/textColorPrimary"
+        android:textColorHint="@color/colorAccent" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-
+        <!-- Following the same pattern for other TextInputLayouts -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutCalories"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -47,67 +47,70 @@
         app:boxCornerRadiusBottomStart="8dp"
         app:boxCornerRadiusTopEnd="8dp"
         app:boxCornerRadiusTopStart="8dp"
-        app:boxStrokeColor="#858C94"
+        app:boxStrokeColor="@color/colorAccent"
         app:boxStrokeWidth="2dp"
         app:hintAnimationEnabled="true"
         app:hintEnabled="true">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/calories"
-            android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:hint="Calories"
-            android:inputType="number"
-            android:padding="8dp"
-            android:textColor="#A2D9FF"
-            android:textColorHint="#858C94" />
-
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/calories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Calories"
+        android:inputType="number"
+        android:padding="8dp"
+        android:textColor="@color/textColorPrimary"
+        android:textColorHint="@color/colorAccent" />
     </com.google.android.material.textfield.TextInputLayout>
 
-
+        <!-- Image view and buttons retain their original IDs and positions -->
+        <!-- Updated buttons to use a consistent style -->
     <ImageView
         android:id="@+id/iv_meal_image"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_below="@+id/meal_name"
-        android:layout_marginTop="100dp"
-        android:src="@drawable/add_image" />
+        android:layout_below="@+id/textInputLayoutCalories"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/add_image" /> <!-- Ensure this is visually aligned with the theme -->
+
+            <!-- Buttons with updated background and text color for consistency -->
+            <!-- Button styles assume the existence of a drawable or color state list that matches your app theme -->
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_meal_image"
-        android:layout_alignParentStart="true"
-        android:fontFamily="@font/inter_semibold"
-        android:background="@drawable/food_button"
-
-        android:textSize="11sp"
-        android:text="Save" />
+        android:layout_marginStart="-88dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="-104dp"
+        android:layout_toStartOf="@+id/iv_meal_image"
+        android:background="@drawable/button_background_selector"
+        android:text="Save"
+        android:textColor="@color/white" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_meal_image"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="60dp"
-        android:background="@drawable/food_button"
+        android:layout_marginStart="144dp"
+        android:layout_marginTop="24dp"
         android:layout_toEndOf="@+id/btn_save"
-        android:fontFamily="@font/inter_semibold"
+        android:background="@drawable/button_background_selector"
         android:text="Add"
-        android:textSize="11sp" />
+        android:textColor="@color/white" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_semibold"
-        android:background="@drawable/food_button"
-        android:textSize="11sp"
         android:layout_below="@id/iv_meal_image"
-        android:layout_alignParentEnd="true"
-        android:text="Delete" />
+        android:layout_marginStart="41dp"
+        android:layout_marginTop="20dp"
+        android:layout_toEndOf="@+id/btn_add"
+        android:background="@drawable/button_background_selector"
+        android:text="Delete"
+        android:textColor="@color/white" />
 
 </RelativeLayout>

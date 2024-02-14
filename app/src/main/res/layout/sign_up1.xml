@@ -120,12 +120,13 @@
         android:id="@+id/nextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/HeightEdit"
-        android:layout_marginTop="181dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
         android:background="@drawable/next_button"
         android:fontFamily="@font/inter_semibold"
         android:text="Next"
         android:textColor="#FFFFFF" />
+
 
     <TextView
         android:id="@+id/textView2"

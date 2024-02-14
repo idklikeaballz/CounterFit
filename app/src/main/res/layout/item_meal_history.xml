@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     app:cardElevation="4dp"
     app:cardCornerRadius="8dp"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    android:background="@color/cardBackground">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -19,6 +20,7 @@
             android:layout_height="wrap_content"
             android:text="Chicken Rice"
             android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textColor="@color/textColorPrimary"
             android:layout_centerHorizontal="true" />
 
         <TextView
@@ -26,6 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="900 Calories"
+            android:textColor="@color/textColorSecondary"
             android:layout_below="@id/textViewMealName"
             android:layout_centerHorizontal="true" />
 
@@ -34,8 +37,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="28/12/2023"
+            android:textColor="@color/textColorSecondary"
             android:layout_below="@id/textViewCalories"
             android:layout_centerHorizontal="true" />
     </RelativeLayout>
-
 </androidx.cardview.widget.CardView>

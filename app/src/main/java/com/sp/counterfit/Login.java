@@ -38,7 +38,7 @@ public class Login extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.PasswordEditText);
         rememberMeCheckBox = findViewById(R.id.checkbox_remember_me);
-        loginButton = findViewById(R.id.nextButton);
+        loginButton = findViewById(R.id.loginButton);
         dbHelper = new SignUpHelper(this);
 
         loginButton.setOnClickListener(new View.OnClickListener() {

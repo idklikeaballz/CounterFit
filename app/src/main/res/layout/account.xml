@@ -4,15 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/backgroundmain">
+    android:background="#142C59">
 
-
+    <!-- Email TextInputLayout -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutEmailUpdate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="4dp"
-        app:boxStrokeColor="#858C94"
+        app:boxStrokeColor="@color/colorAccent"
         app:boxStrokeWidth="2dp"
         app:boxBackgroundColor="@android:color/transparent"
         app:boxCornerRadiusTopStart="8dp"
@@ -21,100 +21,96 @@
         app:boxCornerRadiusBottomEnd="8dp"
         app:hintEnabled="true"
         app:hintAnimationEnabled="true"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        app:hintTextColor="@color/colorAccent"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/emailEditTextUpdate"
-            android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:padding="8dp"
-            android:textColor="#A2D9FF"
-            android:textColorHint="#858C94" />
-    </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutPasswordUpdate"
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/emailEditTextUpdate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="4dp"
-        app:boxStrokeColor="#858C94"
-        app:boxStrokeWidth="2dp"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
-        app:hintEnabled="true"
-        app:hintAnimationEnabled="true"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/PasswordEditTextUpdate"
-            android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:hint="Password"
-            android:inputType="text|textPassword"
-            android:padding="8dp"
-            android:textColor="#A2D9FF"
-            android:textColorHint="#858C94" />
-
-        <TextView
-            android:layout_width="369dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/text_view_with_border"
-            android:drawableStart="@drawable/info"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="10 characters minimum"
-            android:textColor="#858C94"
-            android:textSize="14sp" />
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#A2D9FF" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutConfirmPasswordUpdate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:padding="4dp"
-        app:boxStrokeColor="#858C94"
-        app:boxStrokeWidth="2dp"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
-        app:hintEnabled="true"
-        app:hintAnimationEnabled="true"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+    <!-- Password TextInputLayout -->
+<com.google.android.material.textfield.TextInputLayout
+android:id="@+id/textInputLayoutPasswordUpdate"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:padding="4dp"
+app:boxStrokeColor="@color/colorAccent"
+app:boxStrokeWidth="2dp"
+app:boxBackgroundColor="@android:color/transparent"
+app:boxCornerRadiusTopStart="8dp"
+app:boxCornerRadiusTopEnd="8dp"
+app:boxCornerRadiusBottomStart="8dp"
+app:boxCornerRadiusBottomEnd="8dp"
+app:hintEnabled="true"
+app:hintAnimationEnabled="true"
+style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/ConfirmPasswordUpdate"
-            android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:hint="Confirm Password"
-            android:inputType="text|textPassword"
-            android:padding="8dp"
-            android:textColor="#A2D9FF"
-            android:textColorHint="#858C94" />
-    </com.google.android.material.textfield.TextInputLayout>
+<com.google.android.material.textfield.TextInputEditText
+    android:id="@+id/PasswordEditTextUpdate"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Password"
+    android:inputType="textPassword"
+    android:textColor="#FFFFFF"
+    android:textColorHint="#A2D9FF" />
 
+<!-- Password Requirement TextView -->
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="10 characters minimum"
+    android:textColor="#A2D9FF"
+    android:textSize="14sp"
+    android:layout_gravity="end" />
+</com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Password Requirement Indicator -->
+    <!-- Confirm Password TextInputLayout -->
+<com.google.android.material.textfield.TextInputLayout
+android:id="@+id/textInputLayoutConfirmPasswordUpdate"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginTop="16dp"
+android:padding="4dp"
+app:boxStrokeColor="@color/colorAccent"
+app:boxStrokeWidth="2dp"
+app:boxBackgroundColor="@android:color/transparent"
+app:boxCornerRadiusTopStart="8dp"
+app:boxCornerRadiusTopEnd="8dp"
+app:boxCornerRadiusBottomStart="8dp"
+app:boxCornerRadiusBottomEnd="8dp"
+app:hintEnabled="true"
+app:hintAnimationEnabled="true"
+style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
 
-    <!-- Next Button -->
+<com.google.android.material.textfield.TextInputEditText
+    android:id="@+id/ConfirmPasswordUpdate"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Confirm Password"
+    android:inputType="textPassword"
+    android:textColor="#FFFFFF"
+    android:textColorHint="#A2D9FF" />
+</com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Spacer for layout balance -->
+<View
+android:layout_width="match_parent"
+android:layout_height="0dp"
+android:layout_weight="1" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/Update"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="280dp"
-        android:background="@drawable/next_button"
-        android:padding="12dp"
-        android:text="Update"
-        android:textColor="@color/white" />
-
+    <!-- Update Button -->
+<Button
+    android:id="@+id/Update"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="@color/colorPrimary"
+    android:text="Update"
+    android:textColor="#FFFFFF"
+    android:layout_marginBottom="16dp" />
 </LinearLayout>
