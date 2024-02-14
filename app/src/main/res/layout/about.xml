@@ -5,48 +5,48 @@
     android:background="#142C59">
 
 
+    <!-- Harmonized BottomNavigationView color scheme -->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="16dp">
 
 
         <!-- Optimized ImageView size for better screen compatibility -->
-        <ImageView
-            android:id="@+id/imageViewLogo"
-            android:layout_width="200dp"
-            android:layout_height="150dp"
-            android:layout_marginBottom="24dp"
-            android:src="@drawable/logoimg" />
 
         <!-- Consistent TextView styling for the greeting -->
+        <ImageView
+            android:id="@+id/imageViewLogo"
+            android:layout_width="460dp"
+            android:layout_height="339dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/logoimg" />
+
         <TextView
             android:id="@+id/tvGreeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:fontFamily="@font/inter_bold"
-            android:textColor="#FFFFFF"
-            android:text="Welcome to CounterFit" />
+            android:gravity="center"
+            android:text="Welcome to CounterFit"
+            android:textColor="#FFFFFF" />
 
         <!-- Detailed description with consistent styling -->
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_semibold"
             android:gravity="center"
             android:padding="16dp"
-            android:fontFamily="@font/inter_semibold"
-            android:textColor="#FFFFFF"
-            android:text="CounterFit is your companion in achieving health and wellness goals. Explore features designed for your fitness journey." />
+            android:text="CounterFit is your companion in achieving health and wellness goals. Explore features designed for your fitness journey."
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
-    <!-- Harmonized BottomNavigationView color scheme -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_about"
         android:layout_width="match_parent"
