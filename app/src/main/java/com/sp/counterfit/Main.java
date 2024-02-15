@@ -442,11 +442,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     return true;
                 } else if (id == R.id.bot_gym) {
                     Intent intent = new Intent(Main.this, Gym.class);
+                    item.setChecked(true);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     return true;
                 } else if (id == R.id.bot_food) {
                     Intent intent = new Intent(Main.this, Food.class);
+                    item.setChecked(true);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     foodActivityResultLauncher.launch(intent);
                     return true;

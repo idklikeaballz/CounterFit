@@ -5,11 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SignUpHelper extends SQLiteOpenHelper {
     private static final String TIPS_TABLE_NAME = "Tips";
@@ -734,23 +737,7 @@ public class SignUpHelper extends SQLiteOpenHelper {
         return startDate;
     }
 
-    private double adjustBMRBasedOnWeightGoal(double bmr, String weightGoal) {
-        switch (weightGoal) {
-            case "Gain 0.2 kg per week":
-                return bmr + 200;
-            case "Gain 0.5 kg per week":
-                return bmr + 500;
-            case "Maintain Weight":
-                return bmr;
-            case "Lose 0.2 kg per week":
-                return bmr - 200;
-            case "Lose 0.5 kg per week":
-                return bmr - 500;
-            default:
-                return bmr; // Default case if the weight goal is not recognized
 
-        }
-    }
     public void updateGoalAndCalories(String email, String newGoal) {
         UserDetails userDetails = getUserDetailsByEmail(email);
         if (userDetails != null) {
@@ -790,13 +777,46 @@ public class SignUpHelper extends SQLiteOpenHelper {
                 return bmr;
         }
     }
+    public double calculateDailyWeightChange(int userId) {
+        UserDetails userDetails = getUserDetailsById(userId);
+        if (userDetails == null) {
+            return 0; // No user details found, so we cannot calculate the change.
+        }
+
+        double bmr = calculateBMR(userDetails.gender, userDetails.age, userDetails.weight, userDetails.height);
+        double caloriesConsumedToday = getTotalCaloriesConsumedToday(userId);
+        double calorieDifference = caloriesConsumedToday - bmr;
+
+        // Assuming 100g weight change per 100 calorie surplus or deficit.
+        return (calorieDifference / 100) * 0.1; // Convert calorie difference to kilograms (100g per 100 calories).
+    }
+
+
+    public double getTotalCaloriesConsumedToday(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double totalCalories = 0.0;
+        // Here you should add your logic to fetch the total calories consumed today by the user.
+        // It could be something like this (this is just a placeholder, modify it as per your actual table and column names):
+        String query = "SELECT SUM(calories) FROM " + FOOD_TABLE_NAME + " WHERE " + COLUMN_FOOD_USER_ID + "=? AND date=?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), getTodayDateString()});
+
+        if (cursor.moveToFirst()) {
+            totalCalories = cursor.getDouble(0); // Assume the SUM(calories) is in the first column
+        }
+        cursor.close();
+        db.close();
+        return totalCalories;
+    }
+
+    private String getTodayDateString() {
+        // You'll need to implement this method to return today's date as a string formatted as 'YYYY-MM-DD'.
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(new Date());
+    }
+
+
+
+
 
 
 }
-
-
-
-
-
-
-
