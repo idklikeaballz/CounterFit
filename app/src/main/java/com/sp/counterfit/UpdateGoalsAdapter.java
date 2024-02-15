@@ -25,9 +25,10 @@ public class UpdateGoalsAdapter extends AppCompatActivity {
         String[] goals = new String[]{
                 "Gain 0.2 kg per week",
                 "Gain 0.5 kg per week",
+                "Maintain Weight",
                 "Lose 0.2 kg per week",
-                "Lose 0.5 kg per week",
-                "Maintain Weight"
+                "Lose 0.5 kg per week"
+
         };
 
         // Create an ArrayAdapter using the string array and a default list item layout

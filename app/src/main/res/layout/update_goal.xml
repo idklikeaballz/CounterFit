@@ -2,23 +2,29 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundmain">
+    android:background="@color/backgroundmain"
+    android:padding="16dp">
+
+ =
 
     <ListView
         android:id="@+id/weekly_goal_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="#FFFFFF"
+        android:divider="#DDDDDD"
         android:dividerHeight="1dp"
-       >
-        <!-- List items are defined dynamically or through an adapter -->
+        android:padding="8dp"
+        android:background="@drawable/list_background"
+        android:scrollbars="none">
     </ListView>
+
     <View
         android:id="@+id/viewww"
         android:layout_below="@id/weekly_goal_list"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#FFFFFF" />
+        android:background="#DDDDDD"
+        android:layout_marginTop="16dp"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/updateGoalButton"
@@ -27,8 +33,10 @@
         android:layout_below="@id/viewww"
         android:background="@drawable/next_button"
         android:layout_marginTop="20dp"
-        android:padding="12dp"
-        android:text="Update"
-        android:textColor="@color/white" />
+        android:text="Update Goal"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:layout_margin="16dp"
+        android:padding="12dp"/>
 
 </RelativeLayout>

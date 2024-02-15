@@ -31,9 +31,10 @@ public class UpdateGoal extends AppCompatActivity {
         goals = new String[]{
                 "Gain 0.2 kg per week",
                 "Gain 0.5 kg per week",
+                "Maintain Weight",
                 "Lose 0.2 kg per week",
-                "Lose 0.5 kg per week",
-                "Maintain Weight"
+                "Lose 0.5 kg per week"
+
         };
 
         String currentGoal = dbHelper.getWeightGoalForCurrentUser();

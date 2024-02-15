@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "704128513497",
+    "project_id": "mad-5811d",
+    "storage_bucket": "mad-5811d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:704128513497:android:411a5db35d92cad46855c8",
+        "android_client_info": {
+          "package_name": "com.sp.counterfit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM-xNXY0oa25MDrDxn-1HrWdMcZIc49lk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
