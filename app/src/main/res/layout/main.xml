@@ -164,13 +164,12 @@
 
                             <TextView
                                 android:id="@+id/recommendationLabel"
-                                android:layout_width="79dp"
-                                android:layout_height="27dp"
-                                android:layout_marginLeft="10dp"
-                                android:layout_marginTop="4dp"
+                                android:layout_width="92dp"
+                                android:layout_height="26dp"
                                 android:fontFamily="@font/inter_semibold"
+                                android:gravity="center"
                                 android:text="Recommend"
-                                android:textSize="13sp"
+                                android:textSize="10sp"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintHorizontal_bias="0.461"
                                 app:layout_constraintStart_toStartOf="parent"

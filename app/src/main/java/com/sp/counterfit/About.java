@@ -40,7 +40,6 @@ public class About extends AppCompatActivity {
                     if (id == R.id.bot_home) {
                         Intent intent = new Intent(About.this, Main.class);
                         item.setCheckable(true);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         return true;
                     } else if (id==R.id.bot_gym) {

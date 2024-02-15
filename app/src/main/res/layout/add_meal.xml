@@ -81,36 +81,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_meal_image"
-        android:layout_marginStart="-88dp"
+        android:layout_alignStart="@+id/iv_meal_image"
+        android:layout_marginStart="0dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="-104dp"
-        android:layout_toStartOf="@+id/iv_meal_image"
         android:background="@drawable/button_background_selector"
         android:text="Save"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:textSize="10sp" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_meal_image"
-        android:layout_marginStart="144dp"
+        android:layout_marginStart="44dp"
         android:layout_marginTop="24dp"
         android:layout_toEndOf="@+id/btn_save"
         android:background="@drawable/button_background_selector"
         android:text="Add"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:textSize="10sp" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_delete"
-        android:layout_width="wrap_content"
+        android:layout_width="102dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_meal_image"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="20dp"
+        android:layout_alignEnd="@+id/iv_meal_image"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="0dp"
         android:layout_toEndOf="@+id/btn_add"
         android:background="@drawable/button_background_selector"
         android:text="Delete"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:textSize="10sp" />
 
 </RelativeLayout>
